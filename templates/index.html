@@ -1,0 +1,225 @@
+{% extends 'base.html' %}
+
+{% block title %}Classificação - FuteDesk{% endblock %}
+
+{% block content %}
+<style>
+    /* ESTILOS DA CLASSIFICAÇÃO */
+    :root {
+        --dark-bg: #0f172a;
+        --neon-blue: #00f2ff;
+        --primary-color: #3b82f6;
+        --danger-color: #ef4444;
+        --success-color: #10b981;
+        --text-light: #f1f5f9;
+        --text-grey: #94a3b8;
+        --purple-accent: #6610f2;
+        --dark-solid: #090e1a;
+        --glass-border: rgba(255, 255, 255, 0.1);
+    }
+    
+    .card-table, .history-card, .current-round-card {
+        background: var(--dark-solid);
+        border: 1px solid var(--glass-border);
+        border-radius: 16px;
+        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5);
+        overflow: hidden;
+        margin-bottom: 20px;
+    }
+
+    .card-header-table {
+        background: var(--dark-solid);
+        padding: 25px 30px;
+        border-bottom: 1px solid var(--glass-border);
+        display: flex; justify-content: space-between; align-items: center;
+    }
+    .table-title {
+        font-family: 'Rajdhani', sans-serif; font-size: 1.8rem; font-weight: 700;
+        color: var(--text-light); margin: 0; text-transform: uppercase;
+        border-left: 5px solid var(--purple-accent); padding-left: 15px;
+    }
+
+    .table-brasileirao { width: 100%; border-collapse: collapse; font-size: 0.95rem; color: var(--text-light); }
+    .table-brasileirao th {
+        background: rgba(255, 255, 255, 0.05); color: var(--text-grey);
+        font-size: 0.8rem; font-weight: 700; text-transform: uppercase; padding: 15px 10px; border-bottom: 2px solid var(--glass-border); text-align: center;
+    }
+    .table-brasileirao .col-clube { text-align: left; padding-left: 20px; width: 35%; }
+    .table-brasileirao td {
+        padding: 12px 10px; border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        text-align: center; vertical-align: middle; font-weight: 600;
+    }
+    
+    .td-pts { background-color: rgba(0, 0, 0, 0.3); font-weight: 800 !important; color: var(--neon-blue); font-size: 1.1rem; border-radius: 8px; }
+    .team-pos { width: 25px; color: var(--text-grey); font-weight: 800; margin-right: 10px; }
+    .team-name { font-weight: 700; font-size: 1.05rem; margin-left: 5px; color: white; }
+    
+    .zone-indicator { display: inline-block; width: 4px; height: 20px; margin-right: 10px; vertical-align: middle; border-radius: 2px; }
+    .zone-top .zone-indicator { background-color: var(--primary-color); box-shadow: 0 0 8px var(--primary-color); }
+    .zone-bottom .zone-indicator { background-color: var(--danger-color); box-shadow: 0 0 8px var(--danger-color); }
+
+    .action-btn {
+        width: 30px; height: 30px; display: inline-flex; align-items: center; justify-content: center;
+        border-radius: 6px; border: 1px solid var(--glass-border); color: var(--text-grey);
+        background-color: rgba(255, 255, 255, 0.05); margin-left: 4px; text-decoration: none; transition: 0.2s;
+    }
+    .action-btn:hover { transform: scale(1.1); color: white; }
+    
+    .quick-add {
+        background: rgba(255, 255, 255, 0.1); border-radius: 8px; padding: 5px;
+        display: flex; align-items: center; border: 1px solid var(--glass-border);
+    }
+    .quick-add input { border: none; background: transparent; outline: none; padding-left: 10px; color: white; }
+    .quick-add button { border-radius: 6px; padding: 6px 15px; background: var(--success-color); color: white; border: none; font-weight: bold; font-size: 0.8rem; }
+    
+    /* HISTORICO */
+    .history-card { color: var(--text-light); }
+    .history-item { padding: 10px 15px; border-bottom: 1px solid rgba(255, 255, 255, 0.05); display: flex; justify-content: space-between; font-size: 0.9rem; color: var(--text-grey); }
+    .history-item.active { background-color: rgba(102, 16, 242, 0.15); color: var(--text-light); font-weight: bold; border-left: 3px solid var(--purple-accent); }
+    .history-item a { color: var(--text-grey); text-decoration: none; }
+    .history-item a:hover { color: white; }
+</style>
+
+<div class="container-fluid mt-3">
+    <div class="row g-4">
+        
+        <div class="col-lg-3">
+            <div class="current-round-card p-3 text-center">
+                <small style="color: #94a3b8; font-weight: 700; letter-spacing: 1px;">RODADA ATUAL</small>
+                <div style="font-size: 4rem; font-weight: 800; color: white; line-height: 1; margin: 10px 0;">{{ session.get('current_rodada_num', 1) }}</div>
+
+                <form action="{{ url_for('carregar_rodada', num=0) }}" method="GET" class="d-flex gap-2 mb-3" onsubmit="event.preventDefault(); window.location.href='/carregar_rodada/' + this.target_rodada.value">
+                    <input type="number" name="target_rodada" class="form-control form-control-sm bg-dark text-white border-secondary text-center" placeholder="Ir para..." required>
+                    <button type="submit" class="btn btn-sm btn-primary fw-bold">IR</button>
+                </form>
+
+                <button type="button" class="btn btn-success w-100 fw-bold py-2 mb-2" data-bs-toggle="modal" data-bs-target="#modalNovaRodada">
+                    <i class="bi bi-plus-circle me-2"></i> Próxima (+1)
+                </button>
+                
+                <a href="{{ url_for('imprimir_classificacao') }}" target="_blank" class="btn btn-outline-light w-100 fw-bold py-2 opacity-75">
+                    <i class="bi bi-printer me-2"></i> Imprimir
+                </a>
+            </div>
+
+            <div class="history-card">
+                <div class="p-3 border-bottom border-secondary text-white fw-bold"><i class="bi bi-clock-history me-2"></i> Histórico</div>
+                <div style="max-height: 300px; overflow-y: auto;">
+                    {% if rodadas_salvas %}
+                        {% for r in rodadas_salvas|reverse %}
+                        <div class="history-item {{ 'active' if r.rodada_num == session.get('current_rodada_num') else '' }}">
+                            <span>Rodada {{ r.rodada_num }}</span>
+                            <div>
+                                {% if r.rodada_num != session.get('current_rodada_num') %}
+                                <a href="{{ url_for('carregar_rodada', num=r.rodada_num) }}" title="Ver"><i class="bi bi-eye-fill me-2"></i></a>
+                                {% endif %}
+                                <a href="{{ url_for('deletar_rodada', num=r.rodada_num) }}" class="text-danger" onclick="return confirm('Excluir Rodada {{ r.rodada_num }}?')" title="Apagar"><i class="bi bi-trash-fill"></i></a>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="p-3 text-center small text-muted">Nenhuma rodada salva.</div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-9">
+            <div class="card-table">
+                <div class="card-header-table">
+                    <h2 class="table-title">Classificação</h2>
+                    <form action="{{ url_for('add_team') }}" method="POST" class="quick-add">
+                        <input type="text" name="nome_time" placeholder="Novo Time..." required autocomplete="off">
+                        <button type="submit">OK</button>
+                    </form>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="table-brasileirao">
+                        <thead>
+                            <tr>
+                                <th class="col-clube">Clube</th>
+                                <th class="td-pts">PTS</th>
+                                <th>J</th>
+                                <th>V</th>
+                                <th>E</th>
+                                <th>D</th>
+                                <th>GP</th>
+                                <th>GC</th>
+                                <th>SG</th>
+                                <th>%</th>
+                                <th style="width: 100px;">Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% if times %}
+                                {% for t in times %}
+                                {% set zona = '' %}
+                                {% if loop.index <= 4 %} {% set zona = 'zone-top' %}
+                                {% elif loop.index >= times|length - 3 and times|length > 6 %} {% set zona = 'zone-bottom' %}
+                                {% endif %}
+
+                                <tr class="{{ zona }}">
+                                    <td class="col-clube">
+                                        <span class="zone-indicator"></span>
+                                        <span class="team-pos">{{ loop.index }}</span>
+                                        <span class="team-name">{{ t.nome }}</span>
+                                    </td>
+                                    <td class="td-pts">{{ t.P }}</td>
+                                    <td>{{ t.J }}</td>
+                                    <td>{{ t.V }}</td>
+                                    <td>{{ t.E }}</td>
+                                    <td>{{ t.D }}</td>
+                                    <td>{{ t.GM }}</td>
+                                    <td>{{ t.GS }}</td>
+                                    <td>{{ t.SG }}</td>
+                                    <td style="font-size: 0.85rem;">
+                                        {% if t.J > 0 %}
+                                            {{ ((t.P / (t.J * 3)) * 100) | round | int }}%
+                                        {% else %}
+                                            0%
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <a href="{{ url_for('edit_team', id=t.id) }}" class="action-btn" title="Editar"><i class="bi bi-pencil-fill"></i></a>
+                                        <a href="{{ url_for('delete_team', id=t.id) }}" class="action-btn del" onclick="return confirm('Excluir {{ t.nome }}?')" title="Excluir"><i class="bi bi-trash-fill"></i></a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            {% else %}
+                                <tr>
+                                    <td colspan="11" class="text-center p-5 text-muted">
+                                        <h5>Tabela Vazia</h5>
+                                        <small>Adicione times para começar.</small>
+                                    </td>
+                                </tr>
+                            {% endif %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="modalNovaRodada" tabindex="-1">
+    <div class="modal-dialog modal-sm modal-dialog-centered">
+        <div class="modal-content bg-dark text-white border-secondary">
+            <div class="modal-header border-0 pb-0">
+                <h6 class="modal-title text-muted">Avançar</h6>
+            </div>
+            <form action="{{ url_for('duplicar_rodada') }}" method="POST">
+                <div class="modal-body text-center">
+                    <div class="display-3 fw-bold text-primary">{{ session.get('current_rodada_num', 1) + 1 }}</div>
+                    <p>Próxima Rodada</p>
+                    <input type="hidden" name="nova_rodada_num" value="{{ session.get('current_rodada_num', 1) + 1 }}">
+                </div>
+                <div class="modal-footer border-0 justify-content-center">
+                    <button type="button" class="btn btn-sm btn-light" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-sm btn-primary fw-bold">Confirmar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

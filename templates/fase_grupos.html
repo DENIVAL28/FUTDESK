@@ -1,0 +1,529 @@
+{% extends 'base.html' %}
+
+{% block title %}Fase de Grupos - FuteDesk{% endblock %}
+
+{% block content %}
+<style>
+    .page-title {
+        font-family: 'Rajdhani', sans-serif;
+        text-transform: uppercase;
+        letter-spacing: 0.8px;
+    }
+
+    .top-actions .btn {
+        border-radius: 12px;
+        padding: 10px 14px;
+        font-weight: 800;
+    }
+
+    /* Cards dos grupos */
+    .card-grupo {
+        background: rgba(255,255,255,0.04);
+        border: 1px solid rgba(255,255,255,0.10);
+        border-radius: 16px;
+        overflow: hidden;
+        box-shadow: 0 14px 40px rgba(0,0,0,0.35);
+        backdrop-filter: blur(10px);
+        margin-bottom: 18px;
+    }
+
+    .grupo-header {
+        padding: 14px 16px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-bottom: 1px solid rgba(255,255,255,0.10);
+        background:
+            radial-gradient(700px 240px at 20% 0%, rgba(255,255,255,0.08), transparent 60%),
+            linear-gradient(90deg, rgba(0,0,0,0.35), rgba(0,0,0,0.10));
+    }
+
+    .grupo-title {
+        font-family: 'Rajdhani', sans-serif;
+        font-size: 1.25rem;
+        font-weight: 900;
+        color: rgba(255,255,255,0.96);
+        text-transform: uppercase;
+        margin: 0;
+        letter-spacing: 1px;
+    }
+
+    .grupo-chip {
+        font-size: 0.78rem;
+        font-weight: 900;
+        padding: 7px 10px;
+        border-radius: 999px;
+        border: 1px solid rgba(255,255,255,0.14);
+        background: rgba(0,0,0,0.25);
+        color: rgba(255,255,255,0.92);
+    }
+
+    /* Tabela */
+    .table-grupo {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 0.87rem;
+        color: rgba(255,255,255,0.92);
+    }
+
+    .table-grupo th {
+        background: rgba(0, 0, 0, 0.25);
+        color: rgba(226,232,240,0.80);
+        font-weight: 900;
+        text-transform: uppercase;
+        padding: 10px 8px;
+        text-align: center;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.10);
+        font-size: 0.72rem;
+        letter-spacing: 0.6px;
+        white-space: nowrap;
+    }
+
+    .table-grupo td {
+        padding: 10px 8px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+        text-align: center;
+        vertical-align: middle;
+        font-weight: 700;
+        color: rgba(255,255,255,0.90);
+        white-space: nowrap;
+    }
+
+    .table-grupo tbody tr:hover {
+        background: rgba(255,255,255,0.04);
+    }
+
+    .col-clube {
+        text-align: left !important;
+        padding-left: 14px !important;
+        width: 34%;
+        white-space: normal;
+    }
+
+    .team-rank {
+        display: inline-flex;
+        width: 28px;
+        height: 28px;
+        align-items: center;
+        justify-content: center;
+        border-radius: 10px;
+        background: rgba(0,0,0,0.28);
+        border: 1px solid rgba(255,255,255,0.10);
+        font-weight: 900;
+        margin-right: 10px;
+        color: rgba(255,255,255,0.95);
+    }
+
+    .td-pts {
+        background-color: rgba(0, 0, 0, 0.25);
+        border-left: 2px solid var(--neon-main);
+        color: var(--neon-main);
+        font-weight: 900 !important;
+        font-size: 1rem;
+    }
+
+    .td-v { color: rgba(16,185,129,0.95); }
+    .td-d { color: rgba(239,68,68,0.95); }
+    .td-e { color: rgba(226,232,240,0.78); }
+
+    /* Ações */
+    .btn-icon {
+        width: 30px;
+        height: 30px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 10px;
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        color: rgba(226,232,240,0.78);
+        transition: all 0.18s;
+        text-decoration: none;
+        background: rgba(0,0,0,0.20);
+        margin-left: 4px;
+    }
+    .btn-icon:hover {
+        background: rgba(255,255,255,0.06);
+        color: white;
+        transform: translateY(-1px);
+    }
+    .btn-del:hover {
+        background: rgba(239,68,68,0.18);
+        border-color: rgba(239,68,68,0.55);
+        color: rgba(239,68,68,0.95);
+    }
+
+    /* Aguardando */
+    .waiting-area {
+        background: rgba(255, 255, 255, 0.04);
+        border: 1px dashed rgba(255, 255, 255, 0.18);
+        border-radius: 16px;
+        padding: 16px;
+        margin-top: 18px;
+        box-shadow: 0 14px 40px rgba(0,0,0,0.25);
+    }
+
+    .waiting-badge {
+        padding: 10px 12px;
+        border-radius: 14px;
+        background: rgba(0,0,0,0.22);
+        border: 1px solid rgba(255,255,255,0.10);
+        color: rgba(255,255,255,0.92);
+        font-weight: 800;
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .empty-state {
+        background: rgba(255,255,255,0.04);
+        border: 1px solid rgba(255,255,255,0.10);
+        border-radius: 18px;
+        padding: 26px;
+        box-shadow: 0 14px 40px rgba(0,0,0,0.25);
+    }
+
+    .empty-state h4 {
+        color: rgba(255,255,255,0.92);
+        font-weight: 900;
+        margin-bottom: 6px;
+        font-family: 'Rajdhani', sans-serif;
+        text-transform: uppercase;
+        letter-spacing: 0.8px;
+    }
+
+    .empty-state p {
+        color: rgba(226,232,240,0.78);
+        margin-bottom: 0;
+    }
+
+    /* ===== MODAIS (ANTI-TRAVA CLIQUE) ===== */
+    .fd-modal{
+        position: fixed;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 18px;
+        background: rgba(0,0,0,0.88);
+        backdrop-filter: blur(6px);
+        z-index: 4000;
+
+        opacity: 0;
+        visibility: hidden;
+        pointer-events: none;
+        transition: opacity .15s ease, visibility .15s ease;
+    }
+    .fd-modal.show{
+        opacity: 1;
+        visibility: visible;
+        pointer-events: auto;
+    }
+    .fd-modal-card{
+        width: 360px;
+        max-width: 92vw;
+        background: #0b1220;
+        border: 1px solid rgba(255,255,255,0.14);
+        border-radius: 16px;
+        padding: 22px;
+        box-shadow: 0 18px 60px rgba(0,0,0,.55);
+        position: relative;
+    }
+    .fd-modal-card.wide{ width: 420px; }
+
+    .fd-modal-x{
+        position:absolute;
+        top: 12px;
+        right: 12px;
+        width: 38px;
+        height: 38px;
+        border-radius: 12px;
+        border: 1px solid rgba(255,255,255,0.12);
+        background: rgba(255,255,255,0.06);
+        color: rgba(255,255,255,0.85);
+        display:flex;
+        align-items:center;
+        justify-content:center;
+        cursor:pointer;
+    }
+    .fd-modal-x:hover{ background: rgba(255,255,255,0.10); }
+</style>
+
+<div class="container-fluid py-3">
+
+    <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-2">
+        <div>
+            <h2 class="page-title text-white fw-bold mb-0">Fase de Grupos</h2>
+            <small style="color: rgba(226,232,240,0.75);">
+                {{ total_times }} times cadastrados
+            </small>
+        </div>
+
+        <div class="d-flex flex-wrap gap-2 top-actions">
+            <button type="button" class="btn btn-primary" onclick="openFDModal('modalSorteio')">
+                <i class="bi bi-shuffle me-2"></i> Sortear
+            </button>
+
+            <form action="{{ url_for('gerar_jogos_grupos') }}" method="POST" class="m-0">
+                <button type="submit" class="btn btn-success">
+                    <i class="bi bi-calendar-check me-2"></i> Gerar Jogos
+                </button>
+            </form>
+
+            <button type="button" class="btn btn-outline-light" onclick="openFDModal('modalAddTime')">
+                <i class="bi bi-plus-lg"></i> Time
+            </button>
+        </div>
+    </div>
+
+    <div class="row g-3">
+        {% for nome_grupo, times_grupo in grupos.items()|sort %}
+        <div class="col-12 col-lg-6">
+            <div class="card-grupo">
+                <div class="grupo-header">
+                    <div class="d-flex align-items-center gap-2">
+                        <h3 class="grupo-title">Grupo {{ nome_grupo }}</h3>
+                        <span class="grupo-chip"><i class="bi bi-stars me-1" style="color: var(--neon-main);"></i> Classificação</span>
+                    </div>
+                    <i class="bi bi-grid-3x3-gap-fill" style="color: var(--neon-main); font-size: 1.2rem;"></i>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="table-grupo">
+                        <thead>
+                            <tr>
+                                <th class="col-clube">Clube</th>
+                                <th>PTS</th>
+                                <th>J</th>
+                                <th>V</th>
+                                <th>E</th>
+                                <th>D</th>
+                                <th>GP</th>
+                                <th>GC</th>
+                                <th>SG</th>
+                                <th>%</th>
+                                <th>Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for t in times_grupo %}
+                            <tr>
+                                <td class="col-clube">
+                                    <span class="team-rank">{{ loop.index }}º</span>
+                                    <span style="color: rgba(255,255,255,0.92); font-weight: 900;">{{ t.nome }}</span>
+                                </td>
+                                <td class="td-pts">{{ t.P }}</td>
+                                <td>{{ t.J }}</td>
+                                <td class="td-v">{{ t.V }}</td>
+                                <td class="td-e">{{ t.E }}</td>
+                                <td class="td-d">{{ t.D }}</td>
+                                <td>{{ t.GM }}</td>
+                                <td>{{ t.GS }}</td>
+                                <td>{{ t.SG }}</td>
+                                <td style="font-size: 0.78rem; color: rgba(226,232,240,0.82);">
+                                    {{ "%.0f"|format((t.P / (t.J * 3)) * 100) if t.J > 0 else 0 }}%
+                                </td>
+                                <td>
+                                    <a href="{{ url_for('edit_team', id=t.id) }}" class="btn-icon" title="Editar">
+                                        <i class="bi bi-pencil-fill" style="font-size: 0.85rem;"></i>
+                                    </a>
+                                    <a href="{{ url_for('delete_team', id=t.id) }}" class="btn-icon btn-del" onclick="return confirm('Excluir?')" title="Excluir">
+                                        <i class="bi bi-trash-fill" style="font-size: 0.85rem;"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+
+                            {% if not times_grupo %}
+                            <tr>
+                                <td colspan="11" style="padding: 16px; color: rgba(226,232,240,0.75); text-align:center;">
+                                    Grupo vazio (adicione times e faça o sorteio)
+                                </td>
+                            </tr>
+                            {% endif %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        {% else %}
+        <div class="col-12">
+            <div class="empty-state text-center">
+                <h4>Nenhum grupo formado ainda</h4>
+                <p>Adicione times, depois clique em <strong>Sortear</strong> para distribuir nos grupos.</p>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <div class="waiting-area">
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-2">
+            <h5 class="text-white mb-0" style="font-weight: 900;">
+                <i class="bi bi-hourglass-split me-2" style="color: var(--neon-main);"></i>
+                Aguardando Sorteio
+                <span style="color: rgba(226,232,240,0.75); font-weight: 800;">
+                    ({{ times_aguardando|length if times_aguardando else 0 }})
+                </span>
+            </h5>
+            <small style="color: rgba(226,232,240,0.72);">
+                Times sem grupo aparecem aqui
+            </small>
+        </div>
+
+        {% if times_aguardando %}
+        <div class="d-flex flex-wrap gap-2">
+            {% for t in times_aguardando %}
+            <div class="waiting-badge">
+                <i class="bi bi-shield-fill-check" style="color: rgba(255,255,255,0.85);"></i>
+                <span>{{ t.nome }}</span>
+                <a href="{{ url_for('delete_team', id=t.id) }}" class="text-danger" onclick="return confirm('Excluir?')" title="Excluir">
+                    <i class="bi bi-x-circle-fill"></i>
+                </a>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+            <div style="color: rgba(226,232,240,0.70); padding: 10px 0;">
+                Nenhum time aguardando. Clique em <strong>Time</strong> para adicionar.
+            </div>
+        {% endif %}
+    </div>
+
+    <div class="mt-4 text-end">
+        <form action="{{ url_for('resetar_torneio') }}" method="POST" class="d-inline" onsubmit="return confirm('Tem certeza? Isso vai desfazer os grupos.')">
+            <input type="hidden" name="acao" value="reset_sorteio">
+            <button class="btn btn-sm btn-outline-warning" style="border-radius: 12px;">Refazer Sorteio</button>
+        </form>
+
+        <form action="{{ url_for('resetar_torneio') }}" method="POST" class="d-inline ms-2" onsubmit="return confirm('ATENÇÃO: ISSO APAGA TODOS OS TIMES!')">
+            <input type="hidden" name="acao" value="excluir_tudo">
+            <button class="btn btn-sm btn-outline-danger" style="border-radius: 12px;">Apagar Tudo</button>
+        </form>
+    </div>
+
+</div>
+
+<div id="modalAddTime" class="fd-modal" role="dialog" aria-modal="true" aria-hidden="true">
+    <div class="fd-modal-card">
+        <button type="button" class="fd-modal-x" onclick="closeFDModal('modalAddTime')" aria-label="Fechar">
+            <i class="bi bi-x-lg"></i>
+        </button>
+
+        <h6 class="text-white" style="font-weight:900;">Novo Time</h6>
+        <form action="{{ url_for('add_team') }}" method="POST" class="mt-3">
+            <input type="text" name="nome_time" class="form-control bg-dark text-white border-secondary mb-2" placeholder="Nome da Equipe" required>
+            <select name="grupo" class="form-select bg-dark text-white border-secondary">
+                <option value="">(Opcional) Escolher Grupo...</option>
+                <option value="A">Grupo A</option>
+                <option value="B">Grupo B</option>
+                <option value="C">Grupo C</option>
+                <option value="D">Grupo D</option>
+                <option value="D">Grupo E</option>
+                <option value="D">Grupo F</option>
+                <option value="D">Grupo G</option>
+                <option value="D">Grupo H</option>
+                <option value="D">Grupo I</option>
+
+            </select>
+            <small style="color: rgba(226,232,240,0.72);" class="d-block mt-2">
+                Se não escolher grupo, ele fica em <strong>Aguardando Sorteio</strong>.
+            </small>
+
+            <div class="d-grid gap-2 mt-3">
+                <button type="submit" class="btn btn-primary" style="border-radius:12px;">Salvar</button>
+                <button type="button" class="btn btn-secondary" style="border-radius:12px;" onclick="closeFDModal('modalAddTime')">Cancelar</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div id="modalSorteio" class="fd-modal" role="dialog" aria-modal="true" aria-hidden="true">
+    <div class="fd-modal-card">
+        <button type="button" class="fd-modal-x" onclick="closeFDModal('modalSorteio')" aria-label="Fechar">
+            <i class="bi bi-x-lg"></i>
+        </button>
+
+        <h6 class="text-white" style="font-weight:900;">Realizar Sorteio</h6>
+        <form action="{{ url_for('sortear_grupos') }}" method="POST" class="mt-3">
+            <label class="small mb-1" style="color: rgba(226,232,240,0.75); font-weight: 800;">Quantos Grupos?</label>
+            <select name="qtd_grupos" class="form-select bg-dark text-white border-secondary">
+                 {% for i in range(1, 11) %}
+                      <option value="{{ i }}">{{ i }} Grupo{{ 's' if i > 1 else '' }}</option>
+                 {% endfor %}
+            </select>
+
+            <div class="d-grid gap-2 mt-3">
+                <button type="submit" class="btn btn-primary w-100 fw-bold" style="border-radius:12px;">SORTEAR AGORA</button>
+                <button type="button" class="btn btn-secondary" style="border-radius:12px;" onclick="closeFDModal('modalSorteio')">Cancelar</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div id="modalConfig" class="fd-modal" role="dialog" aria-modal="true" aria-hidden="true">
+    <div class="fd-modal-card wide">
+        <button type="button" class="fd-modal-x" onclick="closeFDModal('modalConfig')" aria-label="Fechar">
+            <i class="bi bi-x-lg"></i>
+        </button>
+
+        <h6 class="text-white" style="font-weight:900;">Configurações</h6>
+        <div class="small mt-1" style="color: rgba(226,232,240,0.75);">Atenção ao usar essas opções.</div>
+
+        <form action="{{ url_for('resetar_torneio') }}" method="POST" class="mt-3">
+            <button type="submit" name="acao" value="reset_sorteio" class="btn btn-outline-warning w-100 mb-2 text-start p-3" style="border-radius:12px;">
+                <strong>Resetar Sorteio</strong><br><small>Volta times para lista de espera.</small>
+            </button>
+
+            <button type="submit" name="acao" value="excluir_tudo" class="btn btn-outline-danger w-100 text-start p-3"
+                    onclick="return confirm('ATENÇÃO: ISSO APAGA TODOS OS TIMES!')"
+                    style="border-radius:12px;">
+                <strong>Excluir Tudo</strong><br><small>Remove todos os times do torneio.</small>
+            </button>
+
+            <button type="button" class="btn btn-secondary w-100 mt-3" style="border-radius:12px;" onclick="closeFDModal('modalConfig')">Fechar</button>
+        </form>
+    </div>
+</div>
+
+<script>
+    function openFDModal(id){
+        const el = document.getElementById(id);
+        if(!el) return;
+        document.querySelectorAll('.fd-modal.show').forEach(m => m.classList.remove('show'));
+        el.classList.add('show');
+        document.body.style.overflow = 'hidden';
+        // ✅ Adicionado para garantir que cliques sejam aceitos
+        document.body.style.pointerEvents = 'auto';
+    }
+
+    function closeFDModal(id){
+        const el = document.getElementById(id);
+        if(!el) return;
+        el.classList.remove('show');
+        if(!document.querySelector('.fd-modal.show')){
+            document.body.style.overflow = '';
+            // ✅ Garante que o site volte a aceitar cliques após fechar
+            document.body.style.pointerEvents = 'auto';
+        }
+    }
+
+    // fechar clicando fora do card
+    document.addEventListener('click', (e) => {
+        const modal = e.target.closest('.fd-modal');
+        if(!modal) return;
+        const card = e.target.closest('.fd-modal-card');
+        if(!card){
+            closeFDModal(modal.id);
+        }
+    });
+
+    // fechar com ESC
+    document.addEventListener('keydown', (e)=>{
+        if(e.key !== 'Escape') return;
+        const open = document.querySelector('.fd-modal.show');
+        if(open){
+            closeFDModal(open.id);
+        }
+    });
+</script>
+
+{% endblock %}

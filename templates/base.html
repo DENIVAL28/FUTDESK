@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{% block title %}FuteDesk PRO{% endblock %}</title>
+
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@600;700;800&family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+
+  <style>
+    :root{
+      --sidebar-width: 280px;
+      --bg0: #020617;
+      --bg1: #0b1220;
+      --card: rgba(255,255,255,.06);
+      --card2: rgba(255,255,255,.04);
+      --border: rgba(255,255,255,.10);
+      --text: #e2e8f0;
+      --muted: rgba(226,232,240,.68);
+
+      /* Neon por modo */
+      {% if g.user and g.user.tipo_campeonato == 'MATA_MATA' %}
+        --neon: #d946ef;
+        --btn: #a855f7;
+      {% else %}
+        --neon: #00f2ff;
+        --btn: #3b82f6;
+      {% endif %}
+
+      /* Compat: pra templates que usam --neon-main */
+      --neon-main: var(--neon);
+    }
+
+    html, body{ height:100%; }
+    body{
+      margin:0;
+      font-family: 'Inter', sans-serif;
+      background: radial-gradient(circle at 10% 0%, #0b1a33 0%, var(--bg0) 55%);
+      color: var(--text);
+      overflow-x:hidden;
+    }
+
+    /* ========= LAYOUT ========= */
+    .fd-app-shell{
+      display:flex;
+      min-height:100vh;
+    }
+
+    /* ========= SIDEBAR ========= */
+    .fd-sidebar{
+      width: var(--sidebar-width);
+      position: fixed;
+      top:0; left:0;
+      height: 100vh;
+      background: linear-gradient(180deg, var(--bg1) 0%, var(--bg0) 100%);
+      border-right: 1px solid var(--border);
+      z-index: 1100;
+      display:flex;
+      flex-direction:column;
+      transform: translateX(0);
+      transition: transform .22s ease;
+    }
+
+    .fd-sidebar-header{
+      padding: 22px 18px;
+      border-bottom: 1px solid var(--border);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      gap:10px;
+    }
+
+    .fd-logo-text{
+      font-family:'Rajdhani', sans-serif;
+      font-weight: 800;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      background: linear-gradient(90deg, #fff, var(--neon));
+      -webkit-background-clip:text;
+      -webkit-text-fill-color:transparent;
+      font-size: 1.6rem;
+      line-height:1;
+    }
+
+    .fd-nav{
+      padding: 12px 12px 18px;
+      overflow:auto;
+      flex:1;
+    }
+
+    .fd-menu-title{
+      margin: 16px 10px 8px;
+      font-size:.70rem;
+      font-weight:900;
+      letter-spacing:.9px;
+      text-transform:uppercase;
+      color: rgba(148,163,184,.95);
+    }
+
+    /* ✅ Classe própria (sem conflito com .nav-link do bootstrap) */
+    .fd-navlink{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      padding: 11px 12px;
+      border-radius: 14px;
+      color: rgba(226,232,240,.88);
+      text-decoration:none;
+      border: 1px solid transparent;
+      transition: .16s ease;
+      margin-bottom: 6px;
+      user-select:none;
+    }
+    .fd-navlink:hover{
+      background: rgba(255,255,255,.06);
+      border-color: rgba(255,255,255,.08);
+      transform: translateX(2px);
+      color:#fff;
+    }
+    .fd-navlink.active{
+      background: linear-gradient(90deg, rgba(255,255,255,.10), transparent);
+      border-color: rgba(255,255,255,.10);
+      box-shadow: inset 4px 0 0 var(--neon);
+      color:#fff;
+    }
+    .fd-navlink i{ width:20px; text-align:center; font-size:1.08rem; color: rgba(226,232,240,.85); }
+    .fd-navlink.active i{ color: var(--neon); }
+
+    .fd-user-card{
+      margin: 12px;
+      padding: 14px;
+      border-radius: 18px;
+      background: rgba(255,255,255,.05);
+      border: 1px solid rgba(255,255,255,.08);
+      display:flex;
+      gap:12px;
+      align-items:center;
+    }
+    .fd-user-avatar{
+      width: 42px; height: 42px;
+      border-radius: 14px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-weight: 900;
+      color:#000;
+      background: linear-gradient(135deg, var(--btn), var(--neon));
+    }
+    .fd-user-info h6{ margin:0; font-weight:800; }
+    .fd-user-info span{
+      color: var(--neon);
+      font-weight:900;
+      font-size:.70rem;
+      letter-spacing:.6px;
+      text-transform:uppercase;
+    }
+
+    /* ========= MAIN ========= */
+    .fd-main{
+      margin-left: var(--sidebar-width);
+      width:100%;
+      padding: 22px;
+      position: relative;
+      z-index: 1;
+    }
+
+    /* ========= MOBILE HEADER ========= */
+    .fd-mobile-header{
+      position: sticky;
+      top:0;
+      z-index: 1200;
+      display:none;
+      padding: 12px 14px;
+      background: rgba(2,6,23,.82);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid rgba(255,255,255,.10);
+      align-items:center;
+      justify-content:space-between;
+    }
+
+    /* ========= OVERLAY (BLINDADO) =========
+       ✅ display:none quando fechado (não existe “invisível pegando clique”)
+    */
+    .fd-overlay{
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,.65);
+      z-index: 1050;
+      display: none;
+    }
+    body.sidebar-open .fd-overlay{
+      display: block;
+    }
+
+    /* ========= RESPONSIVO ========= */
+    @media (max-width: 992px){
+      .fd-mobile-header{ display:flex; }
+      .fd-main{ margin-left: 0; padding: 14px; }
+      .fd-sidebar{ transform: translateX(-100%); }
+      body.sidebar-open .fd-sidebar{ transform: translateX(0); }
+    }
+
+    .alert{
+      border:0;
+      background: rgba(255,255,255,.06);
+      border: 1px solid rgba(255,255,255,.10);
+      color: var(--text);
+    }
+  </style>
+</head>
+
+<body>
+  <!-- ✅ overlay blindado -->
+  <div class="fd-overlay" onclick="closeSidebar()"></div>
+
+  <div class="fd-mobile-header">
+    <div class="d-flex align-items-center gap-2">
+      <i class="bi bi-shield-fill-check" style="color:var(--neon); font-size:1.3rem;"></i>
+      <span class="fd-logo-text" style="font-size:1.2rem;">FuteDesk</span>
+    </div>
+    <button class="btn btn-sm btn-dark border-secondary" type="button" onclick="toggleSidebar()">
+      <i class="bi bi-list fs-4"></i>
+    </button>
+  </div>
+
+  {% if g.user %}
+  <nav class="fd-sidebar" id="sidebar" aria-label="Menu lateral">
+    <div class="fd-sidebar-header">
+      <i class="bi bi-shield-fill-check fs-3" style="color:var(--neon);"></i>
+      <span class="fd-logo-text">FuteDesk</span>
+    </div>
+
+    <div class="fd-user-card">
+      <div class="fd-user-avatar">{{ g.user.username[0]|upper }}</div>
+      <div class="fd-user-info">
+        <h6 class="mb-0">{{ g.user.username }}</h6>
+        <span>{% if g.user.is_admin %}ADMIN{% else %}ORGANIZADOR{% endif %}</span>
+      </div>
+    </div>
+
+    <div class="fd-nav">
+      {% if session.get('current_category_name') %}
+        <div class="fd-menu-title">Categoria ativa</div>
+        <a href="#" class="fd-navlink" style="background: rgba(255,255,255,.05); border-color: rgba(255,255,255,.08); pointer-events:none;">
+          <i class="bi bi-trophy-fill" style="color:var(--neon);"></i>
+          <span class="fw-bold text-white">{{ session.get('current_category_name') }}</span>
+        </a>
+      {% endif %}
+
+      <div class="fd-menu-title">Principal</div>
+
+      {% if g.user.tipo_campeonato == 'MATA_MATA' %}
+        <a href="{{ url_for('fase_grupos_page') }}" class="fd-navlink {{ 'active' if request.endpoint == 'fase_grupos_page' }}">
+          <i class="bi bi-grid-3x3"></i> Fase de Grupos
+        </a>
+        <a href="{{ url_for('mata_mata_page') }}" class="fd-navlink {{ 'active' if request.endpoint == 'mata_mata_page' }}">
+          <i class="bi bi-diagram-2"></i> Chaveamento
+        </a>
+      {% else %}
+        <a href="{{ url_for('index') }}" class="fd-navlink {{ 'active' if request.endpoint == 'index' }}">
+          <i class="bi bi-list-ol"></i> Classificação
+        </a>
+        <a href="{{ url_for('mata_mata_page') }}" class="fd-navlink {{ 'active' if request.endpoint == 'mata_mata_page' }}">
+          <i class="bi bi-diagram-2"></i> Mata-mata
+        </a>
+      {% endif %}
+
+      <a href="{{ url_for('confrontos_page') }}" class="fd-navlink {{ 'active' if request.endpoint == 'confrontos_page' }}">
+        <i class="bi bi-calendar-event"></i> Jogos & Agenda
+      </a>
+      <a href="{{ url_for('artilharia_page') }}" class="fd-navlink {{ 'active' if request.endpoint == 'artilharia_page' }}">
+        <i class="bi bi-crosshair"></i> Artilharia
+      </a>
+      <a href="{{ url_for('goleiros_page') }}" class="fd-navlink {{ 'active' if request.endpoint == 'goleiros_page' }}">
+        <i class="bi bi-shield-lock"></i> Goleiros
+      </a>
+
+      <div class="fd-menu-title">Ferramentas</div>
+      <a href="{{ url_for('gerador_page') }}" class="fd-navlink {{ 'active' if request.endpoint == 'gerador_page' }}">
+        <i class="bi bi-lightning"></i> Gerador de Jogos
+      </a>
+
+      <a href="#" class="fd-navlink" data-bs-toggle="modal" data-bs-target="#modalConfigCamp">
+        <i class="bi bi-gear"></i> Configurar Modo
+      </a>
+
+      <div class="fd-menu-title">Sistema</div>
+      {% if g.user.is_admin %}
+        <a href="{{ url_for('admin_page') }}" class="fd-navlink {{ 'active' if request.endpoint == 'admin_page' }}">
+          <i class="bi bi-people-fill"></i> Painel Admin
+        </a>
+      {% endif %}
+      <a href="{{ url_for('selecionar_categoria') }}" class="fd-navlink">
+        <i class="bi bi-arrow-repeat"></i> Trocar Categoria
+      </a>
+      <a href="{{ url_for('logout') }}" class="fd-navlink text-danger">
+        <i class="bi bi-box-arrow-left"></i> Sair
+      </a>
+    </div>
+  </nav>
+  {% endif %}
+
+  <div class="fd-app-shell">
+    <main class="fd-main">
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+          {% for category, message in messages %}
+            {% set bootstrap_class = 'danger' if category == 'error' else category %}
+            <div class="alert alert-{{ bootstrap_class }} alert-dismissible fade show mb-3" role="alert">
+              <i class="bi bi-info-circle-fill me-2" style="color:var(--neon);"></i>
+              {{ message }}
+              <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+          {% endfor %}
+        {% endif %}
+      {% endwith %}
+
+      {% block content %}{% endblock %}
+    </main>
+  </div>
+
+  <!-- Modal Modo -->
+  <div class="modal fade" id="modalConfigCamp" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content" style="background:#0b1220; border:1px solid rgba(255,255,255,.12); color:#fff;">
+        <div class="modal-header" style="border-bottom:1px solid rgba(255,255,255,.12);">
+          <h5 class="modal-title">Modo de Disputa</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <form action="{{ url_for('alterar_modo_campeonato') }}" method="POST">
+            <label class="form-label" style="color:rgba(226,232,240,.75); font-weight:800;">Estilo do Campeonato</label>
+            <select name="modo" class="form-select" style="background:#0f172a; border:1px solid rgba(255,255,255,.14); color:#fff;">
+              <option value="CORRIDOS" {% if g.user.tipo_campeonato == 'CORRIDOS' %}selected{% endif %}>Pontos Corridos (Liga)</option>
+              <option value="MATA_MATA" {% if g.user.tipo_campeonato == 'MATA_MATA' %}selected{% endif %}>Copa / Torneio (Grupos)</option>
+            </select>
+
+            <div class="alert mt-3" style="background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.10);">
+              <i class="bi bi-exclamation-triangle me-1" style="color:#fbbf24;"></i>
+              Isso altera menus e telas do sistema.
+            </div>
+
+            <div class="d-grid">
+              <button type="submit" class="btn btn-primary fw-bold" style="background:var(--btn); border:0;">
+                SALVAR
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    const BREAKPOINT = 992;
+
+    function openSidebar(){ document.body.classList.add('sidebar-open'); }
+    function closeSidebar(){ document.body.classList.remove('sidebar-open'); }
+    function toggleSidebar(){ document.body.classList.toggle('sidebar-open'); }
+
+    // ✅ Blindagem: ao carregar em desktop, garante sidebar fechada no body (remove overlay)
+    window.addEventListener('DOMContentLoaded', () => {
+      if (window.innerWidth > BREAKPOINT) closeSidebar();
+
+      // ✅ remove backdrops “fantasmas” caso exista algum do bootstrap
+      document.querySelectorAll('.modal-backdrop').forEach(b => b.remove());
+      document.body.classList.remove('modal-open');
+      document.body.style.removeProperty('padding-right');
+    });
+
+    // Fecha sidebar automaticamente ao mudar para desktop
+    window.addEventListener('resize', () => {
+      if (window.innerWidth > BREAKPOINT) closeSidebar();
+    });
+
+    // Em mobile: ao clicar em link do menu, fecha sidebar
+    document.addEventListener('click', (e) => {
+      const link = e.target.closest('.fd-sidebar a.fd-navlink');
+      if (link && window.innerWidth <= BREAKPOINT) closeSidebar();
+    });
+
+    // Segurança extra: se sobrar backdrop de modal por bug, remove ao fechar
+    document.addEventListener('hidden.bs.modal', () => {
+      document.querySelectorAll('.modal-backdrop').forEach(b => b.remove());
+      document.body.classList.remove('modal-open');
+      document.body.style.removeProperty('padding-right');
+    });
+  </script>
+</body>
+</html>

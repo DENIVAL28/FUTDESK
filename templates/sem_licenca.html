@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Acesso Restrito - FuteDesk</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css">
+    <style>
+        body {
+            background-color: #f4f6f9;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Segoe UI', sans-serif;
+        }
+        .lock-card {
+            background: white;
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            text-align: center;
+            max-width: 500px;
+            width: 90%;
+            border-top: 5px solid #dc3545;
+        }
+        .icon-lock {
+            font-size: 80px;
+            color: #dc3545;
+            margin-bottom: 20px;
+        }
+        .btn-whatsapp {
+            background-color: #25D366;
+            color: white;
+            font-weight: bold;
+        }
+        .btn-whatsapp:hover {
+            background-color: #128C7E;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="lock-card">
+        <div class="icon-lock">
+            <i class="bi bi-shield-lock-fill"></i>
+        </div>
+        <h2 class="fw-bold mb-3">Acesso Restrito</h2>
+        <p class="text-muted mb-4">
+            Olá, <strong>{{ g.user.nome if g.user else 'Usuário' }}</strong>.<br>
+            Sua conta foi criada com sucesso, mas você está em <strong>Modo Leitura</strong>.
+        </p>
+        
+        <div class="alert alert-warning text-start" role="alert">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i>
+            <strong>Motivo:</strong> Esta conta ainda não possui uma licença ativa ou autorização do administrador para editar dados.
+        </div>
+
+        <p class="mb-4">Para liberar o acesso completo (criar times, editar tabelas, gerenciar jogos), entre em contato com o suporte ou adquira uma licença.</p>
+
+        <div class="d-grid gap-2">
+            <a href="https://wa.me/5566981289787?text=Ola,%20gostaria%20de%20liberar%20minha%20licenca%20do%20FuteDesk" target="_blank" class="btn btn-whatsapp btn-lg">
+                <i class="bi bi-whatsapp"></i> Comprar Licença / Liberar Acesso
+            </a>
+            <a href="{{ url_for('index') }}" class="btn btn-outline-secondary">
+                Voltar para o Início (Modo Leitura)
+            </a>
+            <a href="{{ url_for('logout') }}" class="btn btn-link text-muted btn-sm mt-2">Sair da conta</a>
+        </div>
+    </div>
+
+</body>
+</html>

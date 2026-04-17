@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FuteDesk - Categorias</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@700&family=Inter:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <style>
+        body { background-color: #0f172a; color: white; font-family: 'Inter', sans-serif; display: flex; align-items: center; justify-content: center; min-height: 100vh; margin: 0; }
+        .card-public { background: #020617; border: 1px solid rgba(255,255,255,0.1); border-radius: 24px; padding: 50px 40px; width: 100%; max-width: 450px; text-align: center; box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5); }
+        h2 { font-family: 'Rajdhani', sans-serif; font-size: 2rem; color: #fff; text-transform: uppercase; margin-bottom: 10px; font-weight: 800; }
+        span { color: #00f2ff; display: block; font-size: 1rem; margin-bottom: 30px; letter-spacing: 2px;}
+        .btn-cat { display: block; width: 100%; padding: 18px; margin-bottom: 15px; border-radius: 14px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; text-decoration: none; transition: 0.3s; border: 1px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.03); color: white; font-size: 1.1rem; }
+        .btn-cat:hover { transform: translateY(-3px); border-color: #00f2ff; background: rgba(0, 242, 255, 0.1); color: #00f2ff; box-shadow: 0 0 20px rgba(0, 242, 255, 0.2); }
+        .btn-voltar { color: #64748b; text-decoration: none; font-size: 0.85rem; margin-top: 30px; display: inline-block; }
+        .btn-voltar:hover { color: white; }
+    </style>
+</head>
+<body>
+    <div class="card-public">
+        <h2>{{ nome_campeonato }}</h2>
+        <span>Escolha a Categoria</span>
+        
+        {% if 'ABERTO' in categorias %}
+        <a href="{{ url_for('publico_ver_tabela', user_id=user_id, categoria='ABERTO') }}" class="btn-cat">Categoria Aberto</a>
+        {% endif %}
+        
+        {% if 'VETERANOS' in categorias %}
+        <a href="{{ url_for('publico_ver_tabela', user_id=user_id, categoria='VETERANOS') }}" class="btn-cat">Categoria Veteranos</a>
+        {% endif %}
+        
+        {% if 'FEMININO' in categorias %}
+        <a href="{{ url_for('publico_ver_tabela', user_id=user_id, categoria='FEMININO') }}" class="btn-cat">Categoria Feminino</a>
+        {% endif %}
+
+        <a href="{{ url_for('publico_lista_campeonatos') }}" class="btn-voltar">Voltar para Campeonatos</a>
+    </div>
+</body>
+</html>

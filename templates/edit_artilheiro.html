@@ -1,0 +1,117 @@
+{% extends 'base.html' %}
+
+{% block title %}Editar Artilheiro - FuteDesk{% endblock %}
+
+{% block content %}
+<style>
+/* --- VARIÁVEIS DE COR NECESSÁRIAS --- */
+/* Copiadas do seu base.html para garantir que o tema seja aplicado corretamente. */
+:root {
+    --dark-bg: #0f172a;
+    --dark-solid: #090e1a;
+    --glass-border: rgba(255, 255, 255, 0.1);
+    --text-light: #f1f5f9;
+    --text-grey: #94a3b8;
+    --neon-blue: #00f2ff;
+    --gold-color: #fbbf24; /* Cor para destaque de artilharia */
+}
+
+/* Estilos para garantir que o card principal seja escuro */
+.card-dark {
+    background-color: var(--dark-solid) !important; /* Fundo do card, o !important garante que ele sobreponha */
+    border: 1px solid var(--glass-border);
+    border-radius: 16px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+}
+.card-header-custom {
+    background: var(--dark-solid);
+    padding: 20px 25px;
+    border-bottom: 1px solid var(--glass-border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    color: var(--text-light);
+}
+
+/* Estilos de Formulário (Garante campos escuros e texto branco) */
+.form-control, .form-select {
+    background-color: rgba(255, 255, 255, 0.1) !important;
+    color: var(--text-light) !important;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+.form-select option {
+    background-color: var(--dark-bg) !important; /* Fundo das opções escuro */
+    color: white;
+}
+.form-label {
+    color: var(--text-grey); /* Cor das labels */
+    font-size: 0.85rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    margin-bottom: 5px;
+}
+.header-title {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 1.5rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: var(--text-light);
+    display: flex;
+    align-items: center;
+}
+
+</style>
+
+<div class="container-fluid mt-3">
+    <div class="row justify-content-center">
+        <div class="col-lg-6 col-md-8">
+            <div class="card-dark">
+                <div class="card-header-custom">
+                    <div class="header-title">
+                        <i class="bi bi-pencil-square me-2" style="color: var(--gold-color);"></i> Editar Artilheiro
+                    </div>
+                </div>
+                <div class="p-4">
+                    
+                    <form action="{{ url_for('edit_artilheiro', id=artilheiro.id) }}" method="POST">
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Jogador</label>
+                            <input type="text" name="jogador" class="form-control" value="{{ artilheiro.jogador }}" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Time</label>
+                            <select name="time_nome" class="form-select" required>
+                                <option value="{{ artilheiro.time_nome }}" selected>{{ artilheiro.time_nome }}</option>
+                                
+                                {% for time_nome in times %}
+                                    {% if time_nome != artilheiro.time_nome %}
+                                    <option value="{{ time_nome }}">{{ time_nome }}</option>
+                                    {% endif %}
+                                {% endfor %}
+                            </select>
+                        </div>
+                        
+                        <div class="row g-2 mb-4">
+                            <div class="col-5">
+                                <label class="form-label">Camisa</label>
+                                <input type="number" name="camisa" class="form-control" value="{{ artilheiro.camisa }}">
+                            </div>
+                            <div class="col-7">
+                                <label class="form-label" style="color: var(--gold-color);">Gols</label>
+                                <input type="number" name="gols" class="form-control" value="{{ artilheiro.gols }}" required style="font-weight: bold;">
+                            </div>
+                        </div>
+
+                        <div class="d-flex justify-content-between mt-4">
+                            <a href="{{ url_for('artilharia_page') }}" class="btn btn-secondary"><i class="bi bi-arrow-left me-2"></i> Cancelar</a>
+                            <button type="submit" class="btn btn-success fw-bold"><i class="bi bi-check-lg me-2"></i> Salvar Edição</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

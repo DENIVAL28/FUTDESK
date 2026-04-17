@@ -1,0 +1,273 @@
+{% extends 'base.html' %}
+
+{% block title %}Artilharia - FuteDesk{% endblock %}
+
+{% block content %}
+<style>
+    /* --- VARIÁVEIS GERAIS (FUTEDESK DARK) --- */
+    :root {
+        --dark-bg: #0f172a;
+        --dark-solid: #090e1a;
+        --glass-border: rgba(255, 255, 255, 0.1);
+        --text-light: #f1f5f9;
+        --text-grey: #94a3b8;
+        --neon-blue: #00f2ff;
+        --gold-color: #fbbf24; /* Cor para destaque de artilharia */
+        --primary-blue: #3b82f6;
+        --danger-red: #ef4444;
+    }
+
+    /* Força fundo escuro */
+    .main-wrapper { background-color: var(--dark-bg) !important; }
+
+    /* Cards */
+    .card-dark {
+        background: var(--dark-solid);
+        border: 1px solid var(--glass-border);
+        border-radius: 16px;
+        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5);
+        color: var(--text-light);
+        overflow: hidden;
+        margin-bottom: 20px;
+        height: 100%;
+    }
+
+    .card-header-custom {
+        background: var(--dark-solid);
+        padding: 20px 25px;
+        border-bottom: 1px solid var(--glass-border);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    .header-title {
+        font-family: 'Rajdhani', sans-serif;
+        font-size: 1.5rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        color: var(--text-light);
+        display: flex;
+        align-items: center;
+    }
+    .header-title i { margin-right: 10px; color: var(--gold-color); }
+
+    /* Formulário Lateral */
+    .form-label {
+        color: var(--text-grey);
+        font-size: 0.85rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        margin-bottom: 5px;
+    }
+
+    .form-control, .form-select {
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid var(--glass-border);
+        color: var(--text-light);
+        border-radius: 8px;
+        padding: 10px;
+    }
+    .form-control:focus, .form-select:focus {
+        background: rgba(255, 255, 255, 0.1);
+        border-color: var(--gold-color);
+        box-shadow: 0 0 0 4px rgba(251, 191, 36, 0.1);
+        color: white;
+    }
+
+    /* Botões */
+    .btn-add {
+        background: var(--gold-color);
+        color: #000;
+        font-weight: 800;
+        width: 100%;
+        border: none;
+        padding: 12px;
+        border-radius: 8px;
+        transition: 0.3s;
+        text-transform: uppercase;
+    }
+    .btn-add:hover { background: #f59e0b; transform: translateY(-2px); }
+
+    .btn-print {
+        background: transparent;
+        border: 1px solid var(--glass-border);
+        color: var(--text-grey);
+        width: 100%;
+        padding: 10px;
+        border-radius: 8px;
+        font-weight: 600;
+        margin-top: 10px;
+        text-decoration: none;
+        display: block;
+        text-align: center;
+        transition: 0.3s;
+    }
+    .btn-print:hover { border-color: var(--text-light); color: var(--text-light); background: rgba(255,255,255,0.05); }
+
+    /* Tabela */
+    .table-pro { width: 100%; border-collapse: collapse; color: var(--text-light); }
+    
+    .table-pro thead th {
+        background: rgba(255, 255, 255, 0.03);
+        color: var(--text-grey);
+        font-size: 0.75rem;
+        font-weight: 800;
+        text-transform: uppercase;
+        padding: 15px;
+        text-align: left;
+        border-bottom: 2px solid var(--glass-border);
+    }
+    
+    .table-pro tbody td {
+        padding: 12px 15px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        vertical-align: middle;
+        background-color: var(--dark-solid);
+    }
+    
+    .table-pro tbody tr:hover td { background: rgba(255, 255, 255, 0.05); }
+
+    /* Rank Badge */
+    .rank-badge {
+        width: 30px; height: 30px;
+        border-radius: 8px;
+        display: inline-flex; align-items: center; justify-content: center;
+        font-weight: 800; font-size: 0.9rem; color: white;
+        background: rgba(255, 255, 255, 0.1);
+    }
+    .rank-1 { background: linear-gradient(135deg, #fbbf24, #d97706); color: #000; box-shadow: 0 0 10px rgba(251, 191, 36, 0.4); }
+    .rank-2 { background: linear-gradient(135deg, #94a3b8, #64748b); color: #000; }
+    .rank-3 { background: linear-gradient(135deg, #b45309, #78350f); }
+
+    /* Colunas */
+    .col-gols { 
+        color: var(--gold-color); 
+        font-weight: 800; 
+        font-size: 1.2rem; 
+        text-align: center; 
+    }
+    .player-name { font-weight: 700; font-size: 1rem; }
+    .team-name-small { font-size: 0.85rem; color: var(--text-grey); }
+
+    /* Ações */
+    .action-btn {
+        color: var(--text-grey); font-size: 1.1rem; margin-left: 5px; transition: 0.2s;
+    }
+    .action-btn:hover { color: var(--primary-blue); transform: scale(1.1); }
+    .action-btn.delete:hover { color: var(--danger-red); }
+
+</style>
+
+<div class="container-fluid mt-3">
+    <div class="row g-4">
+        
+        <div class="col-lg-4">
+            <div class="card-dark">
+                <div class="card-header-custom">
+                    <div class="header-title">
+                        <i class="bi bi-plus-circle-fill"></i> Novo Artilheiro
+                    </div>
+                </div>
+                <div class="p-4">
+                    <form action="{{ url_for('add_artilheiro') }}" method="POST">
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Jogador</label>
+                            <input type="text" name="jogador" class="form-control" placeholder="Nome do Craque" required autocomplete="off">
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Time</label>
+                            <select name="time_nome" class="form-select" required>
+                                <option value="">Selecione o Time...</option>
+                                {% for t in times %}
+                                <option value="{{ t }}" style="color: black;">{{ t }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="row g-2 mb-4">
+                            <div class="col-5">
+                                <label class="form-label">Camisa</label>
+                                <input type="number" name="camisa" class="form-control" placeholder="10">
+                            </div>
+                            <div class="col-7">
+                                <label class="form-label" style="color: var(--gold-color);">Gols</label>
+                                <input type="number" name="gols" class="form-control" placeholder="1" required style="font-weight: bold;">
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn-add">
+                            <i class="bi bi-check2-circle me-2"></i> Adicionar
+                        </button>
+                        
+                        <a href="{{ url_for('imprimir_classificacao') }}" target="_blank" class="btn-print">
+                            <i class="bi bi-printer me-2"></i> Imprimir Relatório
+                        </a>
+
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-8">
+            <div class="card-dark">
+                <div class="card-header-custom">
+                    <div class="header-title">
+                        <i class="bi bi-trophy-fill"></i> Top Artilheiros
+                    </div>
+                    <span class="badge rounded-pill bg-dark text-light border border-secondary">{{ artilheiros|length }} Jogadores</span>
+                </div>
+                
+                <div class="table-responsive">
+                    <table class="table-pro">
+                        <thead>
+                            <tr>
+                                <th class="text-center" style="width: 60px;">#</th>
+                                <th>Jogador</th>
+                                <th>Time</th>
+                                <th class="text-center">Gols</th>
+                                <th class="text-end pe-4">Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% if artilheiros %}
+                                {% for a in artilheiros %}
+                                <tr>
+                                    <td class="text-center">
+                                        {% if loop.index == 1 %} <span class="rank-badge rank-1">1</span>
+                                        {% elif loop.index == 2 %} <span class="rank-badge rank-2">2</span>
+                                        {% elif loop.index == 3 %} <span class="rank-badge rank-3">3</span>
+                                        {% else %} <span class="rank-badge">{{ loop.index }}</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <div class="player-name">{{ a.jogador }}</div>
+                                        {% if a.camisa %}<small class="text-muted" style="font-size: 0.75rem;">Camisa {{ a.camisa }}</small>{% endif %}
+                                    </td>
+                                    <td class="team-name-small">{{ a.time_nome }}</td>
+                                    <td class="col-gols">{{ a.gols }}</td>
+                                    <td class="text-end pe-4">
+                                        <a href="{{ url_for('edit_artilheiro', id=a.id) }}" class="action-btn" title="Editar"><i class="bi bi-pencil-square"></i></a>
+                                        <a href="{{ url_for('delete_artilheiro', id=a.id) }}" class="action-btn delete" onclick="return confirm('Remover {{ a.jogador }}?')" title="Excluir"><i class="bi bi-trash-fill"></i></a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            {% else %}
+                                <tr>
+                                    <td colspan="5" class="text-center p-5" style="color: var(--text-grey);">
+                                        <i class="bi bi-emoji-frown display-4 mb-3 d-block" style="opacity: 0.3;"></i>
+                                        <p>Nenhum artilheiro registrado nesta rodada.</p>
+                                    </td>
+                                </tr>
+                            {% endif %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+{% endblock %}

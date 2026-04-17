@@ -1,0 +1,199 @@
+{% extends 'base.html' %}
+
+{% block title %}Editar Confronto - FuteDesk{% endblock %}
+
+{% block content %}
+<style>
+    /* --- VARIÁVEIS GERAIS (FUTEDESK DARK) --- */
+    :root {
+        --dark-bg: #0f172a;
+        --dark-solid: #090e1a;
+        --glass-border: rgba(255, 255, 255, 0.1);
+        --text-light: #f1f5f9;
+        --text-grey: #94a3b8;
+        --neon-blue: #00f2ff;
+        --primary-blue: #3b82f6;
+        --purple-accent: #6610f2;
+    }
+
+    /* Força fundo escuro */
+    .main-wrapper { background-color: var(--dark-bg) !important; }
+
+    /* Card Centralizado */
+    .card-edit {
+        background: var(--dark-solid);
+        border: 1px solid var(--glass-border);
+        border-radius: 16px;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6);
+        color: var(--text-light);
+        overflow: hidden;
+        max-width: 600px;
+        margin: 40px auto;
+    }
+
+    .card-header-edit {
+        background: rgba(255, 255, 255, 0.03);
+        padding: 25px;
+        border-bottom: 1px solid var(--glass-border);
+        text-align: center;
+    }
+
+    .edit-title {
+        font-family: 'Rajdhani', sans-serif;
+        font-weight: 700;
+        font-size: 1.5rem;
+        margin: 0;
+        color: var(--text-light);
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+
+    /* Inputs e Labels */
+    .form-label {
+        color: var(--text-grey);
+        font-size: 0.85rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        margin-bottom: 8px;
+        display: block;
+    }
+
+    .form-control, .form-select {
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid var(--glass-border);
+        color: var(--text-light);
+        border-radius: 8px;
+        padding: 12px;
+        font-weight: 500;
+    }
+    
+    .form-control:focus, .form-select:focus {
+        background: rgba(255, 255, 255, 0.1);
+        border-color: var(--neon-blue);
+        box-shadow: 0 0 0 4px rgba(0, 242, 255, 0.1);
+        color: white;
+    }
+
+    /* Estilo para Select Options (Fundo escuro) */
+    option {
+        background-color: var(--dark-bg);
+        color: white;
+    }
+
+    /* Botões */
+    .btn-save {
+        background: var(--primary-blue);
+        color: white;
+        border: none;
+        padding: 12px 25px;
+        font-weight: 700;
+        border-radius: 10px;
+        transition: 0.3s;
+    }
+    .btn-save:hover {
+        background: #2563eb;
+        box-shadow: 0 0 15px rgba(59, 130, 246, 0.4);
+    }
+
+    .btn-cancel {
+        background: transparent;
+        border: 1px solid var(--glass-border);
+        color: var(--text-grey);
+        padding: 12px 25px;
+        font-weight: 600;
+        border-radius: 10px;
+        text-decoration: none;
+        transition: 0.3s;
+    }
+    .btn-cancel:hover {
+        border-color: var(--text-light);
+        color: var(--text-light);
+        background: rgba(255, 255, 255, 0.05);
+    }
+
+    /* Seção VS */
+    .vs-block {
+        background: rgba(0, 0, 0, 0.3);
+        padding: 20px;
+        border-radius: 12px;
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        margin-bottom: 20px;
+    }
+</style>
+
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            
+            <div class="card-edit">
+                <div class="card-header-edit">
+                    <h1 class="edit-title">
+                        <i class="bi bi-pencil-fill me-2" style="color: var(--neon-blue);"></i> 
+                        Editar Confronto
+                    </h1>
+                </div>
+                
+                <div class="card-body p-4">
+                    <form action="{{ url_for('edit_confronto', id=confronto.id) }}" method="POST">
+                        
+                        <div class="mb-4">
+                            <label class="form-label">Descrição / Etapa</label>
+                            <input type="text" name="jogo_num" class="form-control" value="{{ confronto.jogo_num }}" placeholder="Ex: Final, Rodada 1..." required>
+                        </div>
+
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-4">
+                                <label class="form-label">Data</label>
+                                <input type="date" name="data_confronto" class="form-control" value="{{ confronto.data_confronto }}" required>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label">Horário</label>
+                                <input type="time" name="horario" class="form-control" value="{{ confronto.horario }}">
+                            </div>
+                            <div class="col-md-5">
+                                <label class="form-label">Local</label>
+                                <input type="text" name="local" class="form-control" value="{{ confronto.local }}" placeholder="Campo...">
+                            </div>
+                        </div>
+
+                        <div class="vs-block">
+                            <div class="row align-items-center g-2">
+                                <div class="col-md-5">
+                                    <label class="form-label text-center w-100" style="color: #3b82f6;">MANDANTE</label>
+                                    <select name="time_a" class="form-select text-center">
+                                        {% for t in times_nomes %}
+                                        <option value="{{ t }}" {% if t == confronto.time_a %}selected{% endif %}>{{ t }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                
+                                <div class="col-md-2 text-center">
+                                    <span style="font-weight: 900; color: var(--text-grey); font-size: 1.2rem;">VS</span>
+                                </div>
+
+                                <div class="col-md-5">
+                                    <label class="form-label text-center w-100" style="color: #ef4444;">VISITANTE</label>
+                                    <select name="time_b" class="form-select text-center">
+                                        {% for t in times_nomes %}
+                                        <option value="{{ t }}" {% if t == confronto.time_b %}selected{% endif %}>{{ t }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="d-flex justify-content-between mt-4 pt-2">
+                            <a href="{{ url_for('confrontos_page') }}" class="btn-cancel">Cancelar</a>
+                            <button type="submit" class="btn-save">
+                                <i class="bi bi-check2-circle me-2"></i> Salvar Alterações
+                            </button>
+                        </div>
+
+                    </form>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+{% endblock %}

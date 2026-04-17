@@ -1,0 +1,422 @@
+{% extends 'base.html' %}
+
+{% block title %}Gestão de Licenças - Admin{% endblock %}
+
+{% block content %}
+<style>
+    /* --- VARIÁVEIS GERAIS (FUTEDESK DARK) --- */
+    :root {
+        --dark-bg: #0f172a;
+        --dark-solid: #090e1a;
+        --glass-border: rgba(255, 255, 255, 0.1);
+        --text-light: #ffffff; /* Texto branco puro para destaque */
+        --text-grey: #94a3b8;
+        --neon-blue: #00f2ff;
+        --primary-blue: #3b82f6;
+        --success-green: #10b981;
+        --warning-yellow: #f59e0b;
+        --danger-red: #ef4444;
+        --whatsapp-green: #25d366;
+    }
+
+    /* Força o fundo escuro na área principal */
+    .main-wrapper { background-color: var(--dark-bg) !important; }
+
+    .card-dark {
+        background: var(--dark-solid) !important;
+        border: 1px solid var(--glass-border);
+        border-radius: 16px;
+        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5);
+        color: var(--text-light);
+        overflow: hidden;
+    }
+
+    .summary-card {
+        background: var(--dark-solid) !important;
+        border: 1px solid var(--glass-border);
+        border-left: 5px solid var(--neon-blue);
+        color: white;
+        padding: 25px;
+        border-radius: 16px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+        height: 100%;
+        display: flex; align-items: center;
+        position: relative;
+    }
+
+    .summary-header {
+        color: var(--text-light) !important; /* Força branco nos títulos */
+        font-size: 0.9rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        margin-bottom: 5px;
+        letter-spacing: 1px;
+    }
+
+    .summary-total { border-left-color: var(--neon-blue); }
+    .summary-total .icon-box { color: var(--neon-blue); }
+
+    .summary-mensal { border-left-color: var(--success-green); }
+    .summary-mensal .icon-box { color: var(--success-green); }
+
+    .summary-vitalicio { border-left-color: var(--warning-yellow); }
+    .summary-vitalicio .icon-box { color: var(--warning-yellow); }
+
+    .icon-box { font-size: 2.5rem; margin-right: 20px; opacity: 0.9; }
+
+    /* Botão de editar preços */
+    .btn-edit-prices {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        color: var(--text-grey);
+        background: rgba(255,255,255,0.1);
+        border-radius: 50%;
+        width: 30px; height: 30px;
+        display: flex; align-items: center; justify-content: center;
+        cursor: pointer;
+        border: none;
+    }
+    .btn-edit-prices:hover { background: rgba(255,255,255,0.2); color: white; }
+
+    /* TABELA */
+    .table-admin { width: 100%; color: var(--text-light); border-collapse: collapse; }
+    .table-admin th {
+        background: rgba(255, 255, 255, 0.05) !important;
+        color: var(--text-grey);
+        border-bottom: 2px solid var(--glass-border);
+        font-size: 0.8rem; text-transform: uppercase; padding: 15px; font-weight: 800;
+    }
+    .table-admin td {
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        padding: 15px; vertical-align: middle;
+        background-color: var(--dark-solid) !important;
+        color: var(--text-light) !important;
+    }
+    .table-admin tbody tr:hover td { background-color: rgba(255, 255, 255, 0.05) !important; }
+
+    /* BOTÕES E BADGES */
+    .btn-action {
+        background: rgba(255,255,255,0.05);
+        border: 1px solid var(--glass-border);
+        color: var(--text-grey);
+        width: 35px; height: 35px;
+        border-radius: 8px;
+        display: inline-flex; align-items: center; justify-content: center;
+        transition: 0.3s; margin-left: 5px; text-decoration: none; cursor: pointer;
+    }
+    .btn-action:hover { background: rgba(255,255,255,0.1); color: white; transform: translateY(-2px); }
+
+    .cat-badge { font-size: 0.65rem; padding: 2px 6px; border-radius: 4px; background: rgba(255,255,255,0.1); color: var(--text-grey); margin-right: 3px; }
+    .superuser-tag { font-size: 0.7rem; background-color: var(--primary-blue); color: white; padding: 2px 6px; border-radius: 4px; font-weight: 700; }
+
+    /* Form Modal */
+    .form-control-modal {
+        background-color: #212529 !important;
+        border-color: #495057 !important;
+        color: white !important;
+    }
+    .cat-option { display: block; margin-bottom: 10px; cursor: pointer; }
+    .cat-option input { display: none; }
+    .cat-box {
+        display: block; padding: 12px; border: 1px solid var(--glass-border);
+        border-radius: 8px; background: rgba(255,255,255,0.05);
+        color: var(--text-grey); font-weight: 700; text-transform: uppercase; text-align: center;
+        transition: 0.3s;
+    }
+    .cat-option input:checked + .cat-box {
+        background: var(--primary-blue); color: white; border-color: var(--primary-blue);
+    }
+
+    /* Checkbox Mural */
+    .form-check-label { color: var(--text-grey); font-weight: 500; font-size: 0.9rem; }
+    .form-check-input { background-color: #212529 !important; border-color: var(--text-grey) !important; }
+    .form-check-input:checked { background-color: var(--primary-blue) !important; border-color: var(--primary-blue) !important; }
+
+</style>
+
+<div class="container-fluid mt-4">
+
+    <div class="d-flex justify-content-between align-items-center mb-5">
+        <div>
+            <h2 class="fw-bold text-light"><i class="bi bi-speedometer2 text-primary"></i> Central de Licenças</h2>
+            <p class="mb-0 text-muted">Gerencie usuários, permissões e dados.</p>
+        </div>
+        <div class="d-flex gap-2">
+            <button type="button" class="btn btn-secondary fw-bold shadow-sm" data-bs-toggle="modal" data-bs-target="#modalPrecos">
+                <i class="bi bi-currency-dollar me-2"></i> Editar Valores
+            </button>
+
+            <button type="button" class="btn btn-warning fw-bold shadow-sm" data-bs-toggle="modal" data-bs-target="#modalAdminPassword" title="Alterar Minha Senha">
+                <i class="bi bi-key-fill me-2"></i> Minha Senha
+            </button>
+
+            <a href="{{ url_for('register') }}" class="btn btn-primary fw-bold shadow-sm" style="background: var(--primary-blue); border: none;">
+                <i class="bi bi-person-plus-fill me-2"></i> Novo Cliente
+            </a>
+            <a href="{{ url_for('admin_resgatar_dados') }}" class="btn btn-outline-light fw-bold" style="border-color: var(--glass-border); color: var(--text-grey);">
+                <i class="bi bi-hdd-network me-2"></i> Resgate
+            </a>
+        </div>
+    </div>
+
+    <div class="row mb-5 g-4">
+        <div class="col-md-4">
+            <div class="summary-card summary-total">
+                <div class="icon-box"><i class="bi bi-people-fill"></i></div>
+                <div>
+                    <div class="summary-header">Total Usuários</div>
+                    <h2 class="fw-bold mb-0">{{ users|length }}</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="summary-card summary-mensal">
+                <div class="icon-box"><i class="bi bi-calendar-check"></i></div>
+                <div>
+                    <div class="summary-header">Mensal / +30 Dias</div>
+                    <h2 class="fw-bold mb-0">R$ {{ preco_mensal }}</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="summary-card summary-vitalicio">
+                <div class="icon-box"><i class="bi bi-award-fill"></i></div>
+                <div>
+                    <div class="summary-header">Vitalício</div>
+                    <h2 class="fw-bold mb-0">R$ {{ preco_vitalicio }}</h2>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card-dark">
+        <div class="card-header bg-transparent py-3 px-4 border-bottom" style="border-color: var(--glass-border) !important;">
+            <h5 class="mb-0 fw-bold text-light"><i class="bi bi-list-ul me-2"></i> Lista de Clientes</h5>
+        </div>
+        <div class="table-responsive">
+            <table class="table-admin">
+                <thead>
+                    <tr>
+                        <th class="ps-4">ID</th>
+                        <th>Cliente / Campeonato</th>
+                        <th class="text-center">Categorias</th>
+                        <th class="text-center">Expira em</th>
+                        <th class="text-end pe-4">Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for u in users %}
+                    <tr>
+                        <td class="ps-4 text-muted">#{{ u.id }}</td>
+                        <td>
+                            <span class="d-block fw-bold text-light" style="font-size: 1.1rem;">{{ u.username }}</span>
+                            {% if u.nome_campeonato %}
+                                <span class="d-block small text-warning">{{ u.nome_campeonato }}</span>
+                            {% endif %}
+                            {% if u.is_admin %}
+                                <span class="superuser-tag">ADMIN</span>
+                            {% endif %}
+                            {% if u.postar_no_mural == 1 %}
+                                <span class="badge bg-success small ms-1"><i class="bi bi-eye-fill"></i> Mural</span>
+                            {% endif %}
+                        </td>
+
+                        <td class="text-center">
+                            {% if u.is_admin %}
+                                <span class="badge bg-dark border border-secondary">TODAS</span>
+                            {% else %}
+                                {% for cat in u.categorias_permitidas %}
+                                    <span class="cat-badge">{{ cat }}</span>
+                                {% else %}
+                                    <span class="text-muted small">Nenhuma</span>
+                                {% endfor %}
+                            {% endif %}
+                        </td>
+
+                        <td class="text-center fw-bold">
+                            {% if u.is_vitalicio or u.is_admin %}
+                                <span style="color: var(--neon-blue);">PERMANENTE</span>
+                            {% elif u.dias_restantes <= 0 %}
+                                <span style="color: var(--danger-red);">0 dias</span>
+                            {% else %}
+                                <span style="color: var(--text-light);">{{ u.dias_restantes }} dias</span>
+                            {% endif %}
+                        </td>
+
+                        <td class="text-end pe-4">
+                            {% if u.username.lower() != 'denival' %}
+                            <div class="d-inline-flex">
+
+                                {% if u.whatsapp_number %}
+                                <a href="https://api.whatsapp.com/send?phone=55{{ u.whatsapp_number | replace(' ', '') | replace('-', '') }}&text=Ol%C3%A1%2C%20{{ u.username }}%21" target="_blank" class="btn-action" style="color: var(--whatsapp-green);">
+                                    <i class="bi bi-whatsapp"></i>
+                                </a>
+                                {% endif %}
+
+                                <a href="{{ url_for('tornar_vitalicio', user_id=u.id) }}" onclick="return confirm('ATENÇÃO: Tornar {{ u.username }} vitalício?')" class="btn-action" style="color: var(--neon-blue);" title="Tornar Vitalício">
+                                    <i class="bi bi-award"></i>
+                                </a>
+
+                                <button type="button" class="btn-action" style="color: var(--success-green);" data-bs-toggle="modal" data-bs-target="#modalRenovar{{ u.id }}" title="Renovar">
+                                    <i class="bi bi-calendar-plus"></i>
+                                </button>
+
+                                <button type="button" class="btn-action" style="color: var(--purple-accent);" data-bs-toggle="modal" data-bs-target="#modalPermissoes{{ u.id }}" title="Categorias">
+                                    <i class="bi bi-list-check"></i>
+                                </button>
+
+                                <button type="button" class="btn-action" style="color: var(--primary-blue);" data-bs-toggle="modal" data-bs-target="#modalEdit{{ u.id }}" title="Editar">
+                                    <i class="bi bi-pencil-square"></i>
+                                </button>
+
+                                <a href="{{ url_for('admin_delete_user', user_id=u.id) }}" class="btn-action" style="color: var(--danger-red);" onclick="return confirm('Tem certeza que deseja excluir o usuário {{ u.username }}?')" title="Excluir">
+                                    <i class="bi bi-trash"></i>
+                                </a>
+                            </div>
+
+                            <div class="modal fade" id="modalRenovar{{ u.id }}" tabindex="-1">
+                                <div class="modal-dialog modal-sm modal-dialog-centered">
+                                    <div class="modal-content" style="background: var(--dark-solid); border: 1px solid var(--glass-border); color: white;">
+                                        <div class="modal-header border-0 text-center">
+                                            <h6 class="modal-title w-100 fw-bold">Renovar: {{ u.username }}</h6>
+                                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                                        </div>
+                                        <form action="{{ url_for('renovar_usuario_custom', user_id=u.id) }}" method="POST">
+                                            <div class="modal-body pt-0">
+                                                <button type="submit" name="dias" value="30" class="btn btn-outline-success w-100 mb-2">30 Dias</button>
+                                                <button type="submit" name="dias" value="365" class="btn btn-outline-primary w-100 mb-2">1 Ano</button>
+                                                <button type="submit" name="dias" value="vitalicio" class="btn btn-info w-100">Vitalício</button>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="modal fade" id="modalPermissoes{{ u.id }}" tabindex="-1">
+                                <div class="modal-dialog modal-sm modal-dialog-centered">
+                                    <div class="modal-content" style="background: var(--dark-solid); border: 1px solid var(--glass-border); color: white;">
+                                        <div class="modal-header border-0 text-center">
+                                            <h6 class="modal-title w-100 fw-bold">Categorias</h6>
+                                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                                        </div>
+                                        <form action="{{ url_for('update_permissions', user_id=u.id) }}" method="POST">
+                                            <div class="modal-body pt-0">
+                                                <label class="cat-option"><input type="checkbox" name="categorias" value="ABERTO" {% if 'ABERTO' in u.categorias_permitidas %}checked{% endif %}><span class="cat-box">Aberto</span></label>
+                                                <label class="cat-option"><input type="checkbox" name="categorias" value="VETERANOS" {% if 'VETERANOS' in u.categorias_permitidas %}checked{% endif %}><span class="cat-box">Veteranos</span></label>
+                                                <label class="cat-option"><input type="checkbox" name="categorias" value="FEMININO" {% if 'FEMININO' in u.categorias_permitidas %}checked{% endif %}><span class="cat-box">Feminino</span></label>
+                                            </div>
+                                            <div class="modal-footer border-0 justify-content-center">
+                                                <button type="submit" class="btn btn-primary btn-sm fw-bold">Salvar</button>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="modal fade" id="modalEdit{{ u.id }}" tabindex="-1">
+                                <div class="modal-dialog modal-dialog-centered">
+                                    <div class="modal-content" style="background: var(--dark-solid); border: 1px solid var(--glass-border); color: white;">
+                                        <div class="modal-header border-0 pb-0">
+                                            <h6 class="modal-title fw-bold">Editar: {{ u.username }}</h6>
+                                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                                        </div>
+                                        <div class="modal-body">
+                                            <form action="{{ url_for('edit_user_data', user_id=u.id) }}" method="POST">
+                                                <div class="mb-3">
+                                                    <label class="form-label small">Nome</label>
+                                                    <input type="text" class="form-control form-control-modal" name="username" value="{{ u.username }}" required>
+                                                </div>
+                                                <div class="mb-3">
+                                                    <label class="form-label small">Campeonato</label>
+                                                    <input type="text" class="form-control form-control-modal" name="nome_campeonato" value="{% if u.nome_campeonato %}{{ u.nome_campeonato }}{% endif %}">
+                                                </div>
+                                                <div class="mb-3">
+                                                    <label class="form-label small">WhatsApp</label>
+                                                    <input type="text" class="form-control form-control-modal" name="whatsapp_number" value="{{ u.whatsapp_number | default('') }}">
+                                                </div>
+
+                                                <div class="mb-3 form-check">
+                                                    <input type="checkbox" class="form-check-input" id="mural_{{ u.id }}" name="postar_no_mural" value="1" {% if u.postar_no_mural == 1 %}checked{% endif %}>
+                                                    <label class="form-check-label" for="mural_{{ u.id }}">Exibir no Mural Público?</label>
+                                                </div>
+
+                                                <div class="mb-3">
+                                                    <label class="form-label small" style="color: var(--warning-yellow);">Nova Senha (Opcional)</label>
+                                                    <input type="password" class="form-control form-control-modal" name="password">
+                                                </div>
+                                                <div class="text-end">
+                                                    <button type="submit" class="btn btn-primary btn-sm fw-bold">Salvar</button>
+                                                </div>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {% else %}
+                                <span class="text-muted small">Superuser</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="modalAdminPassword" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content" style="background: var(--dark-solid); border: 1px solid var(--glass-border); color: white;">
+            <div class="modal-header border-0">
+                <h6 class="modal-title fw-bold">Minha Senha</h6>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form action="{{ url_for('edit_user_data', user_id=g.user.id) }}" method="POST">
+                    <div class="mb-3">
+                        <label class="form-label small">Nova Senha</label>
+                        <input type="password" class="form-control form-control-modal" name="password" required>
+                    </div>
+
+                    <input type="hidden" name="username" value="{{ g.user.username }}">
+                    <input type="hidden" name="nome_campeonato" value="{{ g.user.nome_campeonato or '' }}">
+                    <input type="hidden" name="whatsapp_number" value="{{ g.user.whatsapp_number or '' }}">
+
+                    <div class="text-end">
+                        <button type="submit" class="btn btn-warning btn-sm fw-bold w-100">Alterar Minha Senha</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="modalPrecos" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content" style="background: var(--dark-solid); border: 1px solid var(--glass-border); color: white;">
+            <div class="modal-header border-0">
+                <h6 class="modal-title fw-bold">Editar Preços</h6>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form action="{{ url_for('update_prices') }}" method="POST">
+                    <div class="mb-3">
+                        <label class="form-label small text-success">Preço Mensal</label>
+                        <input type="text" class="form-control form-control-modal" name="preco_mensal" value="{{ preco_mensal }}" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small text-warning">Preço Vitalício</label>
+                        <input type="text" class="form-control form-control-modal" name="preco_vitalicio" value="{{ preco_vitalicio }}" required>
+                    </div>
+                    <div class="text-end">
+                        <button type="submit" class="btn btn-primary btn-sm fw-bold">Salvar Valores</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

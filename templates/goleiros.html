@@ -1,0 +1,252 @@
+{% extends 'base.html' %}
+
+{% block title %}Goleiros - FuteDesk{% endblock %}
+
+{% block content %}
+<style>
+    /* --- VARIÁVEIS GERAIS (FUTEDESK DARK) --- */
+    :root {
+        --dark-bg: #0f172a;
+        --dark-solid: #090e1a;
+        --glass-border: rgba(255, 255, 255, 0.1);
+        --text-light: #f1f5f9;
+        --text-grey: #94a3b8;
+        --neon-blue: #00f2ff;
+        --gol-primary: #10b981; /* Verde Menta para Goleiros */
+        --primary-blue: #3b82f6;
+        --danger-red: #ef4444;
+    }
+
+    /* Força fundo escuro */
+    .main-wrapper { background-color: var(--dark-bg) !important; }
+
+    /* CARDS ESCUROS */
+    .card-dark {
+        background: var(--dark-solid) !important;
+        border: 1px solid var(--glass-border) !important;
+        border-radius: 16px !important;
+        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5) !important;
+        color: var(--text-light) !important;
+        overflow: hidden;
+        margin-bottom: 20px;
+        height: 100%;
+    }
+
+    .card-header-custom {
+        background: var(--dark-solid) !important;
+        padding: 20px 25px;
+        border-bottom: 1px solid var(--glass-border) !important;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    .header-title {
+        font-family: 'Rajdhani', sans-serif;
+        font-size: 1.5rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        color: var(--text-light) !important;
+    }
+
+    /* Formulário */
+    .form-label {
+        color: var(--text-grey) !important;
+        font-size: 0.85rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        margin-bottom: 5px;
+    }
+
+    .form-control, .form-select {
+        background: rgba(255, 255, 255, 0.05) !important;
+        border: 1px solid var(--glass-border) !important;
+        color: var(--text-light) !important;
+        border-radius: 8px !important;
+        padding: 10px !important;
+    }
+    
+    /* Botão Adicionar */
+    .btn-add {
+        background: var(--gol-primary) !important;
+        color: #fff !important;
+        font-weight: 800 !important;
+        width: 100%;
+        border: none;
+        padding: 12px;
+        border-radius: 8px;
+        text-transform: uppercase;
+        cursor: pointer;
+        transition: 0.3s;
+        margin-top: 10px;
+    }
+    .btn-add:hover {
+        background: #059669 !important;
+    }
+
+    /* Tabela */
+    .table-pro { width: 100%; border-collapse: collapse; color: var(--text-light); }
+    
+    .table-pro thead th {
+        background: rgba(255, 255, 255, 0.03) !important;
+        color: var(--text-grey) !important;
+        font-size: 0.75rem;
+        font-weight: 800;
+        text-transform: uppercase;
+        padding: 15px;
+        border-bottom: 2px solid var(--glass-border) !important;
+    }
+    
+    .table-pro tbody td {
+        padding: 12px 15px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05) !important;
+        vertical-align: middle;
+        background-color: var(--dark-solid) !important;
+        color: var(--text-light) !important;
+    }
+
+    /* Rank Badge */
+    .rank-badge {
+        width: 30px; height: 30px;
+        border-radius: 8px;
+        display: inline-flex; align-items: center; justify-content: center;
+        font-weight: 800; font-size: 0.9rem; color: white;
+        background: rgba(255, 255, 255, 0.1);
+    }
+    .rank-1 { background: var(--gol-primary) !important; box-shadow: 0 0 10px rgba(16, 185, 129, 0.4); }
+    .rank-2 { background: #94a3b8 !important; color: #000 !important; }
+    .rank-3 { background: #b45309 !important; }
+
+    .gols-sofridos-badge {
+        color: var(--danger-red);
+        font-weight: 800;
+        font-size: 1.1rem;
+        background: rgba(239, 68, 68, 0.1);
+        padding: 5px 15px;
+        border-radius: 8px;
+        border: 1px solid rgba(239, 68, 68, 0.3);
+    }
+
+    /* Ações */
+    .action-btn {
+        color: var(--text-grey); font-size: 1.1rem; margin-left: 5px;
+    }
+    .action-btn:hover { color: var(--primary-blue); }
+    .action-btn.delete:hover { color: var(--danger-red); }
+
+</style>
+
+<div class="container-fluid mt-3">
+    <div class="row g-4">
+        
+        <div class="col-lg-4">
+            <div class="card-dark">
+                <div class="card-header-custom">
+                    <div class="header-title">
+                        <i class="bi bi-shield-plus me-2" style="color: var(--gol-primary);"></i> Novo Goleiro
+                    </div>
+                </div>
+                <div class="p-4">
+                    <form action="{{ url_for('add_goleiro') }}" method="POST">
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Nome</label>
+                            <input type="text" name="jogador" class="form-control" placeholder="Nome do Goleiro" required autocomplete="off">
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Time</label>
+                            <select name="time_nome" class="form-select" required>
+                                <option value="" style="color: black;">Selecione o Time...</option>
+                                {% for t in times %}
+                                <option value="{{ t }}" style="color: black;">{{ t }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="row g-2 mb-4">
+                            <div class="col-5">
+                                <label class="form-label">Camisa</label>
+                                <input type="number" name="camisa" class="form-control" placeholder="1">
+                            </div>
+                            <div class="col-7">
+                                <label class="form-label" style="color: var(--danger-red);">Gols Sofridos</label>
+                                <input type="number" name="gols_sofridos" class="form-control" placeholder="0" required style="font-weight: bold;">
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn-add">
+                            <i class="bi bi-check2-circle me-2"></i> Registrar Goleiro
+                        </button>
+                        
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-8">
+            <div class="card-dark">
+                <div class="card-header-custom">
+                    <div class="header-title">
+                        <i class="bi bi-shield-fill-exclamation me-2"></i> Gols Sofridos
+                    </div>
+                    <span class="badge rounded-pill bg-dark text-light border border-secondary">{{ goleiros|length }} Goleiros</span>
+                </div>
+                
+                <div class="table-responsive">
+                    <table class="table-pro">
+                        <thead>
+                            <tr>
+                                <th class="text-center" style="width: 60px;">#</th>
+                                <th>Goleiro</th>
+                                <th>Time</th>
+                                <th class="text-center">Gols Sofridos</th>
+                                <th class="text-end pe-4">Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% if goleiros %}
+                                {% for g in goleiros %}
+                                <tr>
+                                    <td class="text-center">
+                                        {% if loop.index == 1 %} <span class="rank-badge rank-1">1</span>
+                                        {% elif loop.index == 2 %} <span class="rank-badge rank-2">2</span>
+                                        {% elif loop.index == 3 %} <span class="rank-badge rank-3">3</span>
+                                        {% else %} <span class="rank-badge">{{ loop.index }}</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <div class="fw-bold text-light">{{ g.jogador }}</div>
+                                        {% if g.camisa %}
+                                            <small style="color: var(--text-grey); font-size: 0.75rem; font-weight: 600;">
+                                                Camisa {{ g.camisa }}
+                                            </small>
+                                        {% endif %}
+                                    </td>
+                                    <td class="small" style="color: var(--text-grey);">{{ g.time_nome }}</td>
+                                    <td class="text-center">
+                                        <span class="gols-sofridos-badge">{{ g.gols_sofridos }}</span>
+                                    </td>
+                                    <td class="text-end pe-4">
+                                        <a href="{{ url_for('edit_goleiro', id=g.id) }}" class="action-btn" title="Editar"><i class="bi bi-pencil-square"></i></a>
+                                        <a href="{{ url_for('delete_goleiro', id=g.id) }}" class="action-btn delete" onclick="return confirm('Remover {{ g.jogador }}?')" title="Excluir"><i class="bi bi-trash-fill"></i></a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            {% else %}
+                                <tr>
+                                    <td colspan="5" class="text-center p-5" style="color: var(--text-grey);">
+                                        <i class="bi bi-shield-check display-4 mb-3 d-block" style="opacity: 0.3;"></i>
+                                        <p>Nenhum goleiro registrado nesta rodada.</p>
+                                    </td>
+                                </tr>
+                            {% endif %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+{% endblock %}

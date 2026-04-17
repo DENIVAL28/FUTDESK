@@ -1,0 +1,648 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FuteDesk - Gestão de Campeonatos</title>
+
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;700;800&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+
+  <style>
+    :root{
+      --bg0:#020617;
+      --bg1:#0b1224;
+      --glass: rgba(255,255,255,.06);
+      --glass2: rgba(255,255,255,.10);
+      --stroke: rgba(255,255,255,.14);
+      --text: #eaf2ff;
+      --muted:#9fb0cc;
+
+      /* Futurista / futebol */
+      --neon:#00f2ff;
+      --neon2:#7c3aed;
+      --green:#22c55e;
+      --danger:#ef4444;
+      --shadow: 0 20px 60px rgba(0,0,0,.55);
+    }
+
+    *{ box-sizing:border-box; }
+    html,body{ height:100%; }
+    body{
+      margin:0;
+      color:var(--text);
+      font-family: "Inter", system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      background:
+        radial-gradient(900px 700px at 18% 20%, rgba(0,242,255,.22), transparent 55%),
+        radial-gradient(800px 600px at 82% 25%, rgba(124,58,237,.22), transparent 55%),
+        radial-gradient(900px 700px at 55% 85%, rgba(34,197,94,.12), transparent 60%),
+        linear-gradient(180deg, var(--bg0), var(--bg1));
+      overflow-x:hidden;
+    }
+
+    /* Fundo futebol: grid + linhas + brilho */
+    .pitch-grid{
+      position:fixed; inset:0; z-index:-2;
+      background-image:
+        linear-gradient(rgba(255,255,255,.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,.04) 1px, transparent 1px);
+      background-size: 48px 48px;
+      opacity:.45;
+      filter: blur(.2px);
+      transform: translateZ(0);
+    }
+
+    .scanlines{
+      position:fixed; inset:0; z-index:-1;
+      pointer-events:none;
+      background:
+        repeating-linear-gradient(
+          to bottom,
+          rgba(255,255,255,.045),
+          rgba(255,255,255,.045) 1px,
+          rgba(0,0,0,0) 3px,
+          rgba(0,0,0,0) 6px
+        );
+      opacity:.08;
+      mix-blend-mode: overlay;
+    }
+
+    .noise{
+      position:fixed; inset:-50px; z-index:-1;
+      pointer-events:none;
+      opacity:.06;
+      background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)' opacity='.6'/%3E%3C/svg%3E");
+      transform: translateZ(0);
+    }
+
+    /* Partículas */
+    canvas#particles{
+      position:fixed; inset:0; z-index:-1;
+      pointer-events:none;
+    }
+
+    /* Layout */
+    .wrap{
+      min-height:100vh;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding: 40px 16px;
+    }
+
+    .shell{
+      width:min(1100px, 100%);
+      border-radius: 26px;
+      background: linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.03));
+      border: 1px solid rgba(255,255,255,.14);
+      box-shadow: var(--shadow);
+      overflow:hidden;
+      position:relative;
+      isolation:isolate;
+    }
+
+    /* Brilhos decorativos */
+    .glow-orb{
+      position:absolute; border-radius:999px; filter: blur(28px);
+      opacity:.55; pointer-events:none;
+    }
+    .orb1{ width:420px; height:420px; left:-140px; top:-160px; background: rgba(0,242,255,.35); }
+    .orb2{ width:360px; height:360px; right:-120px; top:-120px; background: rgba(124,58,237,.35); }
+    .orb3{ width:520px; height:520px; left:20%; bottom:-240px; background: rgba(34,197,94,.20); }
+
+    /* Cabeçalho */
+    .topbar{
+      padding: 18px 22px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:16px;
+      border-bottom: 1px solid rgba(255,255,255,.10);
+      background: rgba(2,6,23,.28);
+      backdrop-filter: blur(10px);
+    }
+
+    .brand{
+      display:flex; align-items:center; gap:12px;
+      user-select:none;
+    }
+
+    .brand-badge{
+      width:44px; height:44px; border-radius:14px;
+      display:grid; place-items:center;
+      background:
+        radial-gradient(18px 18px at 30% 30%, rgba(255,255,255,.35), transparent 70%),
+        linear-gradient(135deg, rgba(0,242,255,.95), rgba(124,58,237,.85));
+      box-shadow: 0 0 0 1px rgba(255,255,255,.12), 0 12px 30px rgba(0,242,255,.18);
+    }
+
+    .brand-badge i{ font-size:22px; color:#041023; }
+
+    .brand-name{
+      font-family:"Rajdhani", sans-serif;
+      font-weight:800;
+      letter-spacing: 2px;
+      font-size: 1.35rem;
+      text-transform:uppercase;
+      margin:0;
+      line-height:1;
+    }
+    .brand-sub{
+      color: var(--muted);
+      font-size:.88rem;
+      margin:0;
+      opacity:.95;
+    }
+
+    .pill{
+      display:inline-flex;
+      align-items:center;
+      gap:10px;
+      padding: 10px 12px;
+      border-radius: 999px;
+      background: rgba(255,255,255,.06);
+      border: 1px solid rgba(255,255,255,.12);
+      color: var(--muted);
+      font-weight:700;
+      letter-spacing:.6px;
+      text-transform:uppercase;
+      font-size:.75rem;
+    }
+    .pill .dot{
+      width:10px; height:10px; border-radius:999px;
+      background: var(--green);
+      box-shadow: 0 0 14px rgba(34,197,94,.45);
+    }
+
+    /* Conteúdo central */
+    .content{
+      padding: 28px 24px 24px;
+      display:grid;
+      grid-template-columns: 1.15fr .85fr;
+      gap: 18px;
+      align-items:stretch;
+    }
+
+    @media (max-width: 992px){
+      .content{ grid-template-columns: 1fr; }
+    }
+
+    .hero{
+      padding: 24px;
+      border-radius: 22px;
+      background: rgba(2,6,23,.30);
+      border: 1px solid rgba(255,255,255,.10);
+      backdrop-filter: blur(10px);
+      position:relative;
+      overflow:hidden;
+    }
+
+    /* “Campo” dentro do hero */
+    .mini-pitch{
+      position:absolute; inset:-1px; opacity:.25; pointer-events:none;
+      background:
+        radial-gradient(250px 220px at 20% 30%, rgba(0,242,255,.35), transparent 60%),
+        radial-gradient(220px 200px at 85% 35%, rgba(124,58,237,.35), transparent 60%),
+        linear-gradient(180deg, rgba(255,255,255,.08), transparent 40%),
+        repeating-linear-gradient(90deg, rgba(255,255,255,.06) 0 1px, transparent 1px 90px);
+      mask-image: radial-gradient(closest-side, black 65%, transparent 100%);
+      transform: translateZ(0);
+    }
+
+    .hero h1{
+      font-family:"Rajdhani", sans-serif;
+      font-weight: 900;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      font-size: clamp(2.2rem, 3.6vw, 3.3rem);
+      margin: 10px 0 8px;
+      line-height: 1.05;
+    }
+
+    .hero h1 span{
+      background: linear-gradient(90deg, #fff, var(--neon));
+      -webkit-background-clip:text;
+      -webkit-text-fill-color: transparent;
+      filter: drop-shadow(0 0 18px rgba(0,242,255,.28));
+    }
+
+    .hero p{
+      margin: 0;
+      color: var(--muted);
+      font-size: 1.02rem;
+      line-height: 1.65;
+      max-width: 60ch;
+    }
+
+    .cta-row{
+      margin-top: 18px;
+      display:flex;
+      flex-wrap:wrap;
+      gap: 12px;
+      align-items:center;
+    }
+
+    /* Botões futuristas com interação */
+    .btn-fx{
+      position:relative;
+      border:none;
+      outline:none;
+      border-radius: 16px;
+      padding: 14px 18px;
+      font-weight: 900;
+      letter-spacing: .8px;
+      text-transform: uppercase;
+      font-family:"Rajdhani", sans-serif;
+      display:inline-flex;
+      align-items:center;
+      gap: 10px;
+      cursor:pointer;
+      user-select:none;
+      transition: transform .18s ease, box-shadow .18s ease, filter .18s ease;
+      text-decoration:none;
+      will-change: transform;
+      overflow:hidden;
+    }
+
+    .btn-fx:active{ transform: translateY(1px) scale(.99); }
+
+    .btn-primary-fx{
+      color:#041023;
+      background:
+        radial-gradient(18px 18px at 30% 30%, rgba(255,255,255,.50), transparent 70%),
+        linear-gradient(135deg, rgba(0,242,255,1), rgba(124,58,237,.90));
+      box-shadow:
+        0 0 0 1px rgba(255,255,255,.14),
+        0 18px 40px rgba(0,242,255,.12),
+        0 18px 40px rgba(124,58,237,.10);
+    }
+
+    .btn-primary-fx:hover{
+      transform: translateY(-2px);
+      filter: brightness(1.08);
+      box-shadow:
+        0 0 0 1px rgba(255,255,255,.18),
+        0 22px 55px rgba(0,242,255,.18),
+        0 22px 55px rgba(124,58,237,.16);
+    }
+
+    .btn-ghost-fx{
+      color: var(--text);
+      background: rgba(255,255,255,.06);
+      border: 1px solid rgba(255,255,255,.14);
+      box-shadow: 0 18px 40px rgba(0,0,0,.20);
+    }
+    .btn-ghost-fx:hover{
+      transform: translateY(-2px);
+      border-color: rgba(255,255,255,.28);
+      background: rgba(255,255,255,.10);
+    }
+
+    /* Ripple */
+    .ripple{
+      position:absolute;
+      border-radius:999px;
+      transform: scale(0);
+      animation: ripple .55s ease-out;
+      background: rgba(255,255,255,.40);
+      mix-blend-mode: overlay;
+      pointer-events:none;
+    }
+    @keyframes ripple{
+      to{ transform: scale(3.2); opacity:0; }
+    }
+
+    /* Painel lateral de recursos */
+    .side{
+      padding: 18px;
+      border-radius: 22px;
+      background: rgba(2,6,23,.30);
+      border: 1px solid rgba(255,255,255,.10);
+      backdrop-filter: blur(10px);
+      display:flex;
+      flex-direction:column;
+      gap: 12px;
+      position:relative;
+      overflow:hidden;
+    }
+
+    .chip{
+      display:flex;
+      gap: 12px;
+      padding: 14px 14px;
+      border-radius: 16px;
+      background: rgba(255,255,255,.06);
+      border: 1px solid rgba(255,255,255,.10);
+      transition: transform .18s ease, border-color .18s ease, background .18s ease;
+    }
+    .chip:hover{
+      transform: translateY(-2px);
+      border-color: rgba(0,242,255,.28);
+      background: rgba(0,242,255,.06);
+    }
+
+    .chip i{
+      width:42px; height:42px;
+      border-radius: 14px;
+      display:grid; place-items:center;
+      background: rgba(255,255,255,.08);
+      border: 1px solid rgba(255,255,255,.12);
+      color: var(--neon);
+      font-size: 1.2rem;
+      box-shadow: 0 12px 30px rgba(0,242,255,.07);
+      flex: 0 0 auto;
+    }
+
+    .chip h6{
+      margin:0;
+      font-family:"Rajdhani", sans-serif;
+      font-weight: 900;
+      letter-spacing: .8px;
+      text-transform: uppercase;
+      font-size: 1.02rem;
+    }
+    .chip p{
+      margin:3px 0 0;
+      color: var(--muted);
+      font-size: .93rem;
+      line-height: 1.4;
+    }
+
+    /* Rodapé */
+    .footer{
+      padding: 14px 22px 18px;
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap: 10px;
+      border-top: 1px solid rgba(255,255,255,.10);
+      background: rgba(2,6,23,.22);
+      backdrop-filter: blur(10px);
+      color: var(--muted);
+      font-size: .9rem;
+    }
+
+    .footer strong{ color: var(--text); }
+
+    /* WhatsApp flutuante */
+    .whats{
+      position:fixed;
+      right: 18px;
+      bottom: 18px;
+      z-index: 9999;
+    }
+    .whats a{
+      display:flex; align-items:center; gap:10px;
+      padding: 12px 14px;
+      border-radius: 999px;
+      text-decoration:none;
+      font-family:"Rajdhani", sans-serif;
+      font-weight:900;
+      letter-spacing:.7px;
+      text-transform: uppercase;
+      color:#041023;
+      background: linear-gradient(135deg, #22c55e, #16a34a);
+      box-shadow: 0 18px 50px rgba(34,197,94,.22), 0 0 0 1px rgba(255,255,255,.12);
+      transition: transform .18s ease, filter .18s ease;
+    }
+    .whats a:hover{ transform: translateY(-2px); filter: brightness(1.05); }
+    .whats i{ font-size: 1.25rem; }
+
+    /* Cursor highlight (segue o mouse) */
+    .spot{
+      position:fixed;
+      width: 520px;
+      height: 520px;
+      border-radius: 999px;
+      pointer-events:none;
+      background: radial-gradient(circle, rgba(0,242,255,.18), transparent 60%);
+      filter: blur(20px);
+      transform: translate(-50%,-50%);
+      opacity: .0;
+      transition: opacity .2s ease;
+      z-index:-1;
+    }
+
+    /* Responsivo */
+    @media (max-width: 520px){
+      .topbar{ flex-direction:column; align-items:flex-start; }
+      .pill{ width:100%; justify-content:space-between; }
+      .cta-row{ flex-direction:column; }
+      .btn-fx{ width:100%; justify-content:center; }
+      .footer{ flex-direction:column; align-items:flex-start; }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="pitch-grid"></div>
+  <div class="scanlines"></div>
+  <div class="noise"></div>
+  <canvas id="particles"></canvas>
+  <div class="spot" id="spot"></div>
+
+  <div class="wrap">
+    <div class="shell" id="tiltCard">
+      <div class="glow-orb orb1"></div>
+      <div class="glow-orb orb2"></div>
+      <div class="glow-orb orb3"></div>
+
+      <div class="topbar">
+        <div class="brand">
+          <div class="brand-badge"><i class="bi bi-shield-fill-check"></i></div>
+          <div>
+            <p class="brand-name mb-1">FuteDesk</p>
+            <p class="brand-sub">Gestão futurista de campeonatos • Liga & Copa</p>
+          </div>
+        </div>
+
+        <div class="pill">
+          <span class="dot"></span>
+          <span>ONLINE • V3 FUTURISTA</span>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="hero">
+          <div class="mini-pitch"></div>
+
+          <div class="d-inline-flex align-items-center gap-2 px-3 py-2 rounded-pill"
+               style="background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.12);">
+            <i class="bi bi-stars" style="color: var(--neon);"></i>
+            <span style="font-weight:800; letter-spacing:.8px; text-transform:uppercase; font-size:.78rem; color: var(--muted);">
+              Painel Público • Futebol em tempo real
+            </span>
+          </div>
+
+          <h1>FUTEBOL <span>INTELIGENTE</span></h1>
+          <p>
+            Organize campeonatos com um visual moderno e profissional: classificação automática, jogos,
+            artilharia, goleiros, fase de grupos e mata-mata — tudo no estilo “neon”.
+          </p>
+
+          <div class="cta-row">
+            <a class="btn-fx btn-primary-fx js-ripple" href="{{ url_for('publico_lista_campeonatos') }}">
+              <i class="bi bi-trophy-fill"></i>
+              Ver Campeonatos
+            </a>
+
+            <a class="btn-fx btn-ghost-fx js-ripple" href="{{ url_for('login') }}">
+              <i class="bi bi-person-workspace"></i>
+              Área do Organizador
+            </a>
+          </div>
+
+          <div class="mt-3 d-flex flex-wrap gap-2">
+            <span class="badge rounded-pill" style="background: rgba(0,242,255,.10); border:1px solid rgba(0,242,255,.22); color: var(--neon);">
+              <i class="bi bi-lightning-charge-fill me-1"></i> Atualização instantânea
+            </span>
+            <span class="badge rounded-pill" style="background: rgba(124,58,237,.10); border:1px solid rgba(124,58,237,.22); color: #c7b6ff;">
+              <i class="bi bi-diagram-3-fill me-1"></i> Liga + Copa
+            </span>
+            <span class="badge rounded-pill" style="background: rgba(34,197,94,.10); border:1px solid rgba(34,197,94,.22); color: #a9f7c6;">
+              <i class="bi bi-graph-up-arrow me-1"></i> Estatísticas
+            </span>
+          </div>
+        </div>
+
+        <div class="side">
+          <div class="chip">
+            <i class="bi bi-lightning-charge-fill"></i>
+            <div>
+              <h6>Automático</h6>
+              <p>Atualiza tabela, saldo, % e rankings com rapidez.</p>
+            </div>
+          </div>
+
+          <div class="chip">
+            <i class="bi bi-kanban-fill"></i>
+            <div>
+              <h6>Organização</h6>
+              <p>Jogos, rodadas, grupos e mata-mata em um só painel.</p>
+            </div>
+          </div>
+
+          <div class="chip">
+            <i class="bi bi-shield-shaded"></i>
+            <div>
+              <h6>Profissional</h6>
+              <p>Visual premium com neon, vidro e estilo esportivo.</p>
+            </div>
+          </div>
+
+          <div class="mt-auto pt-2">
+            <div class="d-flex align-items-center justify-content-between px-2">
+              <span style="color: var(--muted); font-weight:700; font-size:.9rem;">Status do sistema</span>
+              <span class="badge rounded-pill" style="background: rgba(34,197,94,.12); border:1px solid rgba(34,197,94,.22); color:#a9f7c6;">
+                OK
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="footer">
+        <div>© 2026 <strong>FuteDesk</strong> • Futurista Edition</div>
+        <div>Desenvolvido por <strong>Denival Neto T.I</strong></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- WhatsApp -->
+  <div class="whats">
+    <a target="_blank"
+       href="https://wa.me/5566981289787?text=Olá!%20Tenho%20dúvidas%20sobre%20o%20FuteDesk.%20Pode%20me%20ajudar%3F">
+      <i class="bi bi-whatsapp"></i> Dúvidas
+    </a>
+  </div>
+
+  <script>
+    // ===== Ripple nos botões =====
+    document.querySelectorAll(".js-ripple").forEach(btn => {
+      btn.addEventListener("click", (e) => {
+        const rect = btn.getBoundingClientRect();
+        const ripple = document.createElement("span");
+        ripple.className = "ripple";
+        const size = Math.max(rect.width, rect.height);
+        ripple.style.width = ripple.style.height = size + "px";
+        ripple.style.left = (e.clientX - rect.left - size/2) + "px";
+        ripple.style.top  = (e.clientY - rect.top  - size/2) + "px";
+        btn.appendChild(ripple);
+        setTimeout(() => ripple.remove(), 650);
+      });
+    });
+
+    // ===== Spotlight que segue o mouse =====
+    const spot = document.getElementById("spot");
+    window.addEventListener("mousemove", (e) => {
+      spot.style.opacity = "1";
+      spot.style.left = e.clientX + "px";
+      spot.style.top  = e.clientY + "px";
+    });
+    window.addEventListener("mouseleave", () => {
+      spot.style.opacity = "0";
+    });
+
+    // ===== Tilt no card (bem leve e profissional) =====
+    const tilt = document.getElementById("tiltCard");
+    let isMobile = window.matchMedia("(max-width: 992px)").matches;
+    window.addEventListener("resize", ()=> isMobile = window.matchMedia("(max-width: 992px)").matches);
+
+    tilt.addEventListener("mousemove", (e) => {
+      if (isMobile) return;
+      const r = tilt.getBoundingClientRect();
+      const x = (e.clientX - r.left) / r.width - 0.5;
+      const y = (e.clientY - r.top) / r.height - 0.5;
+      tilt.style.transform = `perspective(1100px) rotateX(${(-y*4)}deg) rotateY(${(x*6)}deg)`;
+    });
+    tilt.addEventListener("mouseleave", () => {
+      tilt.style.transform = "perspective(1100px) rotateX(0deg) rotateY(0deg)";
+    });
+
+    // ===== Partículas (leve) =====
+    const canvas = document.getElementById("particles");
+    const ctx = canvas.getContext("2d");
+    let w, h, particles;
+
+    function resize(){
+      w = canvas.width = window.innerWidth;
+      h = canvas.height = window.innerHeight;
+      const count = Math.min(120, Math.floor((w*h) / 18000));
+      particles = Array.from({length: count}, () => ({
+        x: Math.random()*w,
+        y: Math.random()*h,
+        r: 1 + Math.random()*2,
+        vx: (-0.25 + Math.random()*0.5),
+        vy: (-0.25 + Math.random()*0.5),
+        a: 0.08 + Math.random()*0.18
+      }));
+    }
+    window.addEventListener("resize", resize);
+    resize();
+
+    function loop(){
+      ctx.clearRect(0,0,w,h);
+      ctx.fillStyle = "rgba(255,255,255,0.6)";
+      for(const p of particles){
+        p.x += p.vx;
+        p.y += p.vy;
+        if(p.x< -20) p.x = w+20;
+        if(p.x> w+20) p.x = -20;
+        if(p.y< -20) p.y = h+20;
+        if(p.y> h+20) p.y = -20;
+
+        ctx.globalAlpha = p.a;
+        ctx.beginPath();
+        ctx.arc(p.x,p.y,p.r,0,Math.PI*2);
+        ctx.fill();
+      }
+      ctx.globalAlpha = 1;
+      requestAnimationFrame(loop);
+    }
+    loop();
+  </script>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

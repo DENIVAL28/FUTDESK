@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cadastro Fechado - FuteDesk</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css">
+    <style>
+        body {
+            background-color: #f4f6f9;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Segoe UI', sans-serif;
+        }
+        .lock-card {
+            background: white;
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            text-align: center;
+            max-width: 500px;
+            width: 90%;
+            border-top: 5px solid #dc3545;
+        }
+        .icon-lock {
+            font-size: 80px;
+            color: #dc3545;
+            margin-bottom: 20px;
+        }
+        .btn-whatsapp {
+            background-color: #25D366;
+            color: white;
+            font-weight: bold;
+        }
+        .btn-whatsapp:hover {
+            background-color: #128C7E;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="lock-card">
+        <div class="icon-lock">
+            <i class="bi bi-person-plus-fill"></i>
+        </div>
+        <h2 class="fw-bold mb-3">Novos Cadastros</h2>
+        
+        <div class="alert alert-info text-start" role="alert">
+            <i class="bi bi-info-circle-fill me-2"></i>
+            <strong>Atenção:</strong> O registro de novos usuários é restrito.
+        </div>
+
+        <p class="mb-4 text-muted">
+            Para criar uma conta e utilizar o sistema FuteDesk, entre em contato com o suporte e solicite sua licença de acesso.
+        </p>
+
+        <div class="d-grid gap-2">
+            <a href="https://wa.me/5566981289787?text=Ola,%20gostaria%20de%20criar%20um%20usuario%20no%20FuteDesk" target="_blank" class="btn btn-whatsapp btn-lg">
+                <i class="bi bi-whatsapp"></i> Falar com Suporte (Denival)
+            </a>
+            <a href="{{ url_for('login') }}" class="btn btn-outline-secondary mt-2">
+                Voltar para Login
+            </a>
+        </div>
+    </div>
+
+</body>
+</html>

@@ -1,0 +1,447 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<style>
+    /* VARIÁVEIS DE COR E EFEITOS FUTURISTAS */
+    :root {
+        --color-bg: #0c0d1b; /* Fundo Escuro Profundo */
+        --color-card: #181a29; /* Cor do Card Principal */
+        --color-accent: #00f2ff; /* Ciano Neon (Principal) */
+        --color-success: #10b981; /* Verde (Ação Gerar) */
+        --color-warning: #ffc107; /* Amarelo (Aguardando) */
+        --color-danger: #ef4444; /* Vermelho (Perigo) */
+        --color-primary-button: #5c62ec; /* Roxo (Botão Time) */
+        --color-text-light: #e2e8f0;
+        --color-text-muted: #94a3b8;
+    }
+
+    /* --- GERAL --- */
+    body { background-color: var(--color-bg); }
+
+    /* --- HERO SECTION (Aprimorado) --- */
+    .hero-banner {
+        background: radial-gradient(circle at top left, #29384c 0%, #151a24 100%);
+        border-radius: 16px;
+        padding: 35px 30px;
+        margin-bottom: 30px;
+        border: 1px solid rgba(0, 242, 255, 0.2); 
+        box-shadow: 0 0 20px rgba(0, 242, 255, 0.1); 
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 20px;
+        transition: all 0.3s;
+    }
+    .hero-banner:hover {
+        box-shadow: 0 0 30px rgba(0, 242, 255, 0.2), 0 10px 40px rgba(0,0,0,0.5);
+    }
+
+    .hero-title h2 {
+        font-family: 'Rajdhani', sans-serif;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 3px;
+        font-size: 2.8rem;
+        background: linear-gradient(90deg, var(--color-accent), #f0f8ff, var(--color-accent));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        margin: 0;
+    }
+
+    .stat-box {
+        background: rgba(0, 242, 255, 0.05); 
+        padding: 12px 25px;
+        border-radius: 12px;
+        text-align: center;
+        border: 1px solid rgba(0, 242, 255, 0.15);
+        transition: transform 0.2s;
+    }
+    .stat-box:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 0 15px rgba(0, 242, 255, 0.3);
+    }
+    .stat-number { 
+        font-size: 1.8rem; 
+        font-weight: 700; 
+        color: var(--color-accent); 
+        text-shadow: 0 0 5px rgba(0, 242, 255, 0.7); 
+        display: block; 
+    }
+    .stat-label { font-size: 0.8rem; color: var(--color-text-muted); text-transform: uppercase; letter-spacing: 1px; }
+
+    /* Ações de Botões */
+    .btn-action-group .btn {
+        font-size: 0.95rem;
+        padding: 12px 20px;
+        border-radius: 8px;
+        transition: all 0.3s;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    }
+    .btn-action-group .btn-outline-danger {
+        border-color: var(--color-danger);
+        color: var(--color-danger);
+    }
+    .btn-action-group .btn-outline-danger:hover {
+        background-color: var(--color-danger);
+        color: #fff;
+        box-shadow: 0 0 15px var(--color-danger);
+    }
+    .btn-action-group .btn-success {
+        background-color: var(--color-success);
+        border-color: var(--color-success);
+    }
+    .btn-action-group .btn-success:hover {
+        background-color: #0d9472;
+        box-shadow: 0 0 20px rgba(16, 185, 129, 0.5); 
+    }
+    .btn-action-group .btn-primary {
+        background-color: var(--color-primary-button);
+        border-color: var(--color-primary-button);
+    }
+    .btn-action-group .btn-primary:hover {
+        background-color: #4a50e0;
+        box-shadow: 0 0 20px rgba(92, 98, 236, 0.5); 
+    }
+
+    /* --- SALA DE ESPERA (WAITING ROOM) --- */
+    .waiting-room {
+        background: rgba(255, 193, 7, 0.1);
+        border: 2px solid var(--color-warning); 
+        border-radius: 16px;
+        padding: 25px;
+        margin-bottom: 40px;
+        box-shadow: 0 0 15px rgba(255, 193, 7, 0.3);
+    }
+    .waiting-room h4 {
+        color: var(--color-warning);
+        text-shadow: 0 0 5px rgba(255, 193, 7, 0.7);
+    }
+    .badge-time {
+        background: var(--color-card);
+        color: var(--color-text-light);
+        padding: 10px 18px;
+        border-radius: 5px;
+        font-size: 0.95rem;
+        border: 1px solid #333;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.4);
+        transition: background-color 0.2s;
+    }
+    .badge-time:hover {
+        background: #25283b;
+        border-color: var(--color-primary-button);
+    }
+
+    /* --- GRUPOS GRID & CARD --- */
+    .grid-grupos {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); 
+        gap: 30px;
+    }
+
+    .card-grupo {
+        background: var(--color-card);
+        border-radius: 15px;
+        overflow: hidden;
+        border: 1px solid #2d2d3f;
+        box-shadow: 0 5px 20px rgba(0,0,0,0.5);
+        transition: transform 0.3s, box-shadow 0.3s;
+    }
+    .card-grupo:hover { 
+        transform: translateY(-5px); 
+        border-color: var(--color-accent); 
+        box-shadow: 0 5px 25px rgba(0, 242, 255, 0.2); 
+    }
+
+    .header-grupo {
+        padding: 18px 20px;
+        display: flex; justify-content: space-between; align-items: center;
+        background: rgba(0,0,0,0.3);
+        border-bottom: 1px solid #2d2d3f;
+    }
+    .grupo-letra { 
+        font-family: 'Rajdhani', sans-serif; 
+        font-size: 1.6rem; 
+        font-weight: 700; 
+        color: var(--color-accent); 
+        text-shadow: 0 0 5px rgba(0, 242, 255, 0.5);
+    }
+
+    .table-grupo { width: 100%; border-collapse: collapse; font-size: 0.95rem; color: var(--color-text-light); }
+    .table-grupo th { 
+        text-align: center; 
+        padding: 14px 5px; 
+        color: var(--color-text-muted); 
+        font-size: 0.8rem; 
+        text-transform: uppercase; 
+        font-weight: 700; 
+        background: #10121d; 
+    }
+    .table-grupo td { 
+        text-align: center; 
+        padding: 15px 5px; 
+        border-bottom: 1px solid #2a2d40; 
+    }
+    .table-grupo tr:last-child td { border-bottom: none; }
+    
+    .pos-num { font-weight: 800; color: var(--color-text-muted); font-size: 0.9rem; }
+    .time-nome { 
+        text-align: left; 
+        padding-left: 15px; 
+        font-weight: 600; 
+        color: var(--color-text-light); 
+        font-size: 1.05rem; 
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    .zona-ver { 
+        border-left: 5px solid var(--color-success); 
+        background: linear-gradient(90deg, rgba(16,185,129,0.1), transparent); 
+    }
+    
+    .saldo-positivo { color: var(--color-success) !important; font-weight: bold; }
+    .saldo-negativo { color: var(--color-danger) !important; }
+
+    /* Estado Vazio */
+    .empty-state-card {
+        background: var(--color-card);
+        border: 1px dashed var(--color-text-muted);
+        border-radius: 15px;
+        padding: 60px;
+    }
+    .empty-state-card .display-1 {
+        color: var(--color-accent) !important;
+        opacity: 0.1 !important;
+    }
+
+    /* Estilo para Modals */
+    .form-control, .form-select {
+        background: #0f172a !important;
+        border: 1px solid #3b82f6 !important;
+        color: #fff !important;
+    }
+    
+    /* --- CORREÇÃO DE LEGIBILIDADE DO TEXTO EM NEGRITO NO MODAL --- */
+    .modal-content-area strong {
+        color: #fff !important; /* Força a cor branca para o negrito */
+        text-shadow: 0 0 2px rgba(0,0,0,0.8); 
+    }
+</style>
+
+<div class="container-fluid">
+
+    <div class="hero-banner">
+        <div class="hero-title">
+            <h2>Fase de Grupos</h2>
+            <p class="text-muted mb-0">Gestão de Chaves e Classificação</p>
+        </div>
+        
+        <div class="hero-stats">
+            <div class="stat-box">
+                <span class="stat-number">
+                    {% if grupos %}{{ grupos|length }}{% else %}0{% endif %}
+                </span>
+                <span class="stat-label">Grupos</span>
+            </div>
+            <div class="stat-box">
+                <span class="stat-number">
+                    {{ total_times }}
+                </span>
+                <span class="stat-label">Times</span>
+            </div>
+        </div>
+
+        <div class="btn-action-group">
+            <button onclick="document.getElementById('modalConfig').style.display='flex'" class="btn btn-outline-danger btn-lg" title="Configurações Avançadas">
+                <i class="bi bi-gear-fill"></i>
+            </button>
+            
+            <form action="{{ url_for('gerar_jogos_grupos') }}" method="POST" style="display:inline;">
+                <button type="submit" class="btn btn-success px-4 fw-bold">
+                    <i class="bi bi-calendar-plus me-2"></i> GERAR JOGOS
+                </button>
+            </form>
+
+            <button onclick="document.getElementById('modalAddTime').style.display='flex'" class="btn btn-primary px-4 fw-bold">
+                <i class="bi bi-plus-lg me-2"></i> TIME
+            </button>
+        </div>
+    </div>
+
+    {% if times_aguardando %}
+    <div class="waiting-room fade-in">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h4 class="text-warning m-0 fw-bold"><i class="bi bi-pause-circle me-2"></i>TIMES AGUARDANDO SORTEIO ({{ times_aguardando|length }})</h4>
+            <button onclick="document.getElementById('modalSorteio').style.display='flex'" class="btn btn-warning fw-bold shadow-sm">
+                <i class="bi bi-shuffle me-2"></i> REALIZAR SORTEIO
+            </button>
+        </div>
+        <div class="d-flex flex-wrap gap-2">
+            {% for time in times_aguardando %}
+                <div class="badge-time">
+                    <i class="bi bi-lightning-fill text-primary"></i>
+                    {{ time.nome }}
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    {% if grupos %}
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h3 class="text-white fw-bold m-0"><i class="bi bi-table me-2 text-info"></i> CLASSIFICAÇÃO ATUAL</h3>
+        <button onclick="document.getElementById('modalSorteio').style.display='flex'" class="btn btn-sm text-muted hover-white">
+            <i class="bi bi-arrow-repeat me-1"></i> Refazer Sorteio
+        </button>
+    </div>
+
+    <div class="grid-grupos">
+        {% set cores = ['#00f2ff', '#10b981', '#f59e0b', '#ec4899', '#8b5cf6', '#ef4444'] %}
+        {% for grupo_nome, times in grupos.items() %}
+        {% set cor = cores[loop.index0 % 6] %}
+        
+        <div class="card-grupo">
+            <div class="header-grupo" style="border-top: 4px solid {{ cor }};">
+                <span class="grupo-letra" style="color: {{ cor }}; text-shadow: 0 0 8px {{ cor }}99;">GRUPO {{ grupo_nome }}</span>
+                <i class="bi bi-grid-3x3-gap-fill" style="color: {{ cor }}; opacity: 0.6; font-size: 1.2rem;"></i>
+            </div>
+            <table class="table-grupo">
+                <thead>
+                    <tr>
+                        <th width="10%">#</th>
+                        <th width="45%" style="text-align: left; padding-left: 15px;">Equipe</th>
+                        <th title="Pontos">P</th>
+                        <th title="Jogos">J</th>
+                        <th title="Vitórias">V</th>
+                        <th title="Saldo de Gols">SG</th>
+                        <th width="10%">Ação</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for time in times %}
+                    <tr class="{{ 'zona-ver' if loop.index <= 2 else '' }}">
+                        <td><span class="pos-num">{{ loop.index }}º</span></td>
+                        <td class="time-nome">
+                            {% if time.logo_url %}
+                                <img src="{{ time.logo_url }}" style="width: 24px; height: 24px; object-fit: contain; border-radius: 50%;">
+                            {% endif %}
+                            {{ time.nome }}
+                        </td>
+                        <td style="color: var(--color-accent); font-weight: bold;">{{ time.P }}</td>
+                        <td>{{ time.J }}</td>
+                        <td>{{ time.V }}</td>
+                        <td class="{{ 'saldo-positivo' if time.SG > 0 else 'saldo-negativo' if time.SG < 0 else '' }}">
+                            {{ time.SG }}
+                        </td>
+                        <td>
+                            <a href="{{ url_for('edit_team', id=time.id) }}" class="text-muted hover-white">
+                                <i class="bi bi-pencil-square"></i>
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+        {% if not times_aguardando %}
+        <div class="text-center py-5">
+            <div class="empty-state-card">
+                <i class="bi bi-trophy display-1 text-muted opacity-25"></i>
+                <h3 class="mt-4 text-white">Torneio Desativado</h3>
+                <p class="text-muted">Comece adicionando os times para ativar o gerenciamento de grupos.</p>
+                <button onclick="document.getElementById('modalAddTime').style.display='flex'" class="btn btn-primary px-5 mt-3 fw-bold">
+                    <i class="bi bi-plus-lg me-2"></i> ADICIONAR PRIMEIRO TIME
+                </button>
+            </div>
+        </div>
+        {% endif %}
+    {% endif %}
+
+</div>
+
+<div id="modalAddTime" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:2000; justify-content:center; align-items:center; backdrop-filter: blur(5px);">
+    <div style="background:#1e1e2d; padding:30px; border-radius:12px; width:350px; border: 1px solid #333; box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
+        <h4 class="text-white mb-4 text-center">Adicionar Time</h4>
+        
+        <form action="{{ url_for('add_team') }}" method="POST">
+            
+            <div class="mb-4">
+                <label class="text-light small fw-bold mb-2">NOME DA EQUIPE</label>
+                <input type="text" name="nome_time" class="form-control" required 
+                        style="background: #0f172a; border: 1px solid var(--color-primary-button); color: #fff; padding: 12px; font-size: 1.1rem;" 
+                        placeholder="Digite o nome aqui...">
+            </div>
+
+            <input type="hidden" name="grupo" value="AGUARDANDO">
+            
+            <div class="d-grid gap-2">
+                <button type="submit" class="btn btn-success fw-bold py-2">SALVAR TIME</button>
+                
+                <button type="button" onclick="document.getElementById('modalAddTime').style.display='none'" class="btn btn-outline-light">
+                    Cancelar
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div id="modalSorteio" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:2000; justify-content:center; align-items:center; backdrop-filter: blur(5px);">
+    <div style="background:#1e1e2d; padding:30px; border-radius:12px; width:320px; text-align:center; border: 1px solid #333;">
+        <i class="bi bi-diagram-3 text-warning display-4 mb-3"></i>
+        <h4 class="text-white">Sortear Grupos</h4>
+        <p class="text-muted small mb-4">Os times na espera serão distribuídos aleatoriamente.</p>
+        <form action="{{ url_for('sortear_grupos') }}" method="POST">
+            <select name="qtd_grupos" class="form-select bg-dark text-white border-secondary mb-3">
+                <option value="2">2 Grupos</option>
+                <option value="3">3 Grupos</option>
+                <option value="4" selected>4 Grupos</option>
+                <option value="5">5 Grupos</option>
+                <option value="6">6 Grupos</option>
+                <option value="8">8 Grupos</option>
+            </select>
+            <button type="submit" class="btn btn-warning w-100 fw-bold">CONFIRMAR</button>
+            <button type="button" onclick="this.parentElement.parentElement.parentElement.style.display='none'" class="btn btn-link text-muted w-100 mt-2 text-decoration-none">Cancelar</button>
+        </form>
+    </div>
+</div>
+
+<div id="modalConfig" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.9); z-index:2050; justify-content:center; align-items:center;">
+    <div class="modal-content-area" style="background:#1e1e2d; padding:30px; border-radius:12px; width:450px; border: 1px solid var(--color-accent); box-shadow: 0 0 30px rgba(0, 242, 255, 0.2);">
+        
+        <h4 class="text-white mb-4"><i class="bi bi-gear-wide-connected me-2 text-info"></i>Configurações Avançadas do Torneio</h4>
+        <p class="text-muted mb-4">Gerencie as regras e o estado da Fase de Grupos.</p>
+
+        <button onclick="document.getElementById('modalSorteio').style.display='flex'; document.getElementById('modalConfig').style.display='none'" 
+                class="btn btn-outline-info w-100 mb-3 text-start p-3 fw-bold">
+            <i class="bi bi-list-columns-reverse me-2"></i> <strong>Configurar Regras de Sorteio</strong>
+            <br><small class="text-muted fw-normal">Definir o número de grupos e critérios.</small>
+        </button>
+        
+        <hr style="border-top: 1px solid #333; margin: 30px 0;">
+        
+        <h5 class="text-danger mb-3 fw-bold"><i class="bi bi-exclamation-triangle-fill me-2"></i> Zona de Perigo</h5>
+        <form action="{{ url_for('resetar_torneio') }}" method="POST">
+            
+            <button type="submit" name="acao" value="reset_sorteio" class="btn btn-outline-warning w-100 mb-2 text-start p-3">
+                <strong><i class="bi bi-arrow-counterclockwise me-2"></i> Resetar Sorteio</strong><br>
+                <small class="text-muted">Mantém os times, mas remove os grupos. Volta tudo para "Aguardando".</small>
+            </button>
+
+            <button type="submit" name="acao" value="excluir_tudo" class="btn btn-outline-danger w-100 text-start p-3" onclick="return confirm('Tem certeza absoluta? Isso apaga todos os times da Copa!')">
+                <strong><i class="bi bi-trash-fill me-2"></i> Excluir Tudo</strong><br>
+                <small class="text-muted">Apaga todos os times e começa do zero.</small>
+            </button>
+        </form>
+        
+        <button type="button" onclick="document.getElementById('modalConfig').style.display='none'" class="btn btn-secondary w-100 mt-3">Fechar</button>
+    </div>
+</div>
+
+{% endblock %}

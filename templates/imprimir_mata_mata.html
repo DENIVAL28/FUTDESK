@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chaveamento - Boletim Oficial</title>
+    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@600;700;800&family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
+    
+    <style>
+        /* --- CONFIGURAÇÕES GERAIS --- */
+        :root {
+            --primary-color: #0f172a;
+            --accent-color: #2563eb;
+            --text-dark: #000000; /* Preto total para impressão */
+            --text-light: #475569;
+            --border-color: #94a3b8; /* Borda mais escura */
+            --box-bg: #f8fafc;
+        }
+
+        * { box-sizing: border-box; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #555; 
+            margin: 0; padding: 0;
+        }
+
+        /* Configuração da Página A4 Paisagem */
+        .page {
+            background: white;
+            width: 297mm; 
+            height: 209mm; /* Altura exata do A4 Paisagem menos margem de segurança */
+            margin: 20px auto; 
+            padding: 10mm 15mm;
+            box-shadow: 0 0 20px rgba(0,0,0,0.5);
+            position: relative;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* --- BARRA DE CONTROLE --- */
+        .no-print {
+            background: #1e293b; padding: 15px; text-align: center;
+            position: fixed; top: 0; left: 0; width: 100%; z-index: 999;
+            display: flex; justify-content: center; gap: 15px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+        }
+        .btn-print, .btn-close {
+            padding: 10px 25px; border-radius: 8px; font-weight: bold; text-transform: uppercase;
+            cursor: pointer; border: none; font-family: 'Inter', sans-serif; color: white;
+        }
+        .btn-print { background: #2563eb; }
+        .btn-close { background: #475569; }
+
+        /* --- CABEÇALHO --- */
+        .header {
+            border-bottom: 4px solid var(--primary-color);
+            padding-bottom: 10px; margin-bottom: 15px;
+            display: flex; justify-content: space-between; align-items: flex-end;
+            flex-shrink: 0; /* Não encolher */
+        }
+        .header-left h1 {
+            font-family: 'Rajdhani', sans-serif; font-size: 36px; margin: 0;
+            text-transform: uppercase; color: var(--primary-color); line-height: 0.9;
+        }
+        .categoria-badge {
+            color: var(--accent-color); font-weight: 900; font-size: 20px; text-transform: uppercase;
+        }
+        .header-right { text-align: right; }
+        .rodada-badge {
+            background: var(--primary-color); color: white; padding: 4px 12px;
+            font-weight: bold; font-size: 14px; border-radius: 4px; font-family: 'Rajdhani', sans-serif;
+        }
+
+        /* --- BRACKET (CHAVEAMENTO) --- */
+        .bracket-wrapper {
+            flex-grow: 1; /* Ocupar o espaço restante */
+            display: flex;
+            justify-content: space-between; /* Espalhar colunas */
+            align-items: center;
+            padding: 0 20px;
+        }
+
+        .column {
+            display: flex;
+            flex-direction: column;
+            justify-content: space-around; /* Distribuir verticalmente */
+            height: 100%;
+            width: 26%; /* Largura fixa para colunas */
+            position: relative;
+        }
+
+        .col-header {
+            text-align: center;
+            font-weight: 900;
+            color: var(--accent-color);
+            text-transform: uppercase;
+            margin-bottom: 10px;
+            font-size: 14px;
+            letter-spacing: 1px;
+            border-bottom: 2px solid #e2e8f0;
+            padding-bottom: 5px;
+        }
+
+        /* --- CAIXA DO JOGO (CARD) --- */
+        .match {
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            background: var(--box-bg);
+            padding: 0;
+            position: relative;
+            box-shadow: 3px 3px 0px rgba(0,0,0,0.1); /* Sombra sólida para destaque */
+            z-index: 2;
+        }
+
+        .team {
+            padding: 10px 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 13px;
+            font-weight: 700; /* Negrito */
+            color: var(--text-dark);
+            background: white;
+        }
+        .team:first-child { 
+            border-bottom: 1px solid var(--border-color); 
+            border-radius: 6px 6px 0 0;
+        }
+        .team:last-child { 
+            border-radius: 0 0 6px 6px;
+        }
+        
+        /* NOME DO TIME EM DESTAQUE */
+        .team-name {
+            text-transform: uppercase;
+            font-weight: 900; /* Extra negrito */
+            font-size: 14px;
+            letter-spacing: 0.5px;
+        }
+
+        .team small { 
+            color: var(--text-light); 
+            font-size: 11px; 
+            font-weight: 600;
+            margin-left: 5px; 
+        }
+
+        .placar-box {
+            background: #e2e8f0;
+            width: 25px; height: 25px;
+            display: flex; align-items: center; justify-content: center;
+            border-radius: 4px;
+            font-weight: bold;
+            color: var(--text-dark);
+        }
+
+        /* Estilo da Final */
+        .final .match { border: 3px solid #fbbf24; box-shadow: 4px 4px 0px rgba(251, 191, 36, 0.3); }
+        .final .col-header { color: #d97706; border-bottom-color: #fbbf24; }
+        .final .team-name { font-size: 16px; color: #d97706; }
+
+        /* --- LINHAS CONECTORAS (Grossas) --- */
+        .column:not(:last-child) .match::after {
+            content: ''; position: absolute; right: -25px; top: 50%; width: 25px; height: 3px; background: var(--border-color);
+        }
+        .column:not(:first-child) .match::before {
+            content: ''; position: absolute; left: -25px; top: 50%; width: 25px; height: 3px; background: var(--border-color);
+        }
+        
+        /* Linhas Verticais */
+        .column:nth-child(1) .match:nth-child(odd)::after {
+            height: 100%; top: 50%; right: -25px; width: 3px; background: transparent; border-right: 3px solid var(--border-color);
+        }
+        /* Ajustes manuais de altura das linhas verticais */
+        .column:nth-child(1) .match:nth-child(1)::after { height: calc(100% + 60px); } /* Ajuste para espaçamento */
+        .column:nth-child(1) .match:nth-child(3)::after { height: calc(100% + 60px); }
+
+        /* --- RODAPÉ --- */
+        .footer {
+            position: absolute; bottom: 10mm; left: 15mm; right: 15mm;
+            border-top: 1px solid var(--border-color); padding-top: 10px;
+            display: flex; justify-content: space-between; font-size: 10px;
+            color: var(--text-light); text-transform: uppercase;
+        }
+
+        @media print {
+            @page { size: A4 landscape; margin: 0; }
+            body { background: white; }
+            .page { box-shadow: none; margin: 0; width: 100%; height: 100vh; border: none; }
+            .no-print { display: none; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="no-print">
+        <button onclick="window.print()" class="btn-print">🖨️ Imprimir Chaveamento</button>
+        <button onclick="window.close()" class="btn-close">Fechar</button>
+    </div>
+
+    <div class="page">
+        
+        <div class="header">
+            <div class="header-left">
+                <h1>Fase Mata-Mata</h1>
+                <div style="font-size: 14px; color: #64748b; font-weight: 600;">
+                    CATEGORIA: <span class="categoria-badge">{{ session.get('current_category_name', 'GERAL') }}</span>
+                </div>
+            </div>
+            <div class="header-right">
+                <div class="rodada-badge">TABELA OFICIAL</div>
+                <span style="font-size: 10px; color: #64748b; display: block; margin-top: 5px;">{{ data_geracao }}</span>
+            </div>
+        </div>
+
+        <div class="bracket-wrapper">
+            {% if times|length >= 8 %}
+                
+                <div class="column">
+                    <div class="col-header">Quartas de Final</div>
+                    {% for i in range(0, 8, 2) %}
+                    <div class="match">
+                        <div class="team">
+                            <span class="team-name">{{ times[i].nome }} <small>({{i+1}}º)</small></span>
+                            <span class="placar-box"></span>
+                        </div>
+                        <div class="team">
+                            <span class="team-name">{{ times[7-i].nome }} <small>({{8-i}}º)</small></span>
+                            <span class="placar-box"></span>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+
+                <div class="column">
+                    <div class="col-header">Semifinais</div>
+                    {% for i in range(2) %}
+                    <div class="match" style="margin: 60px 0;"> <div class="team">
+                            <span style="color: #94a3b8; font-weight: 600;">Venc. Jogo {{i*2+1}}</span>
+                            <span class="placar-box"></span>
+                        </div>
+                        <div class="team">
+                            <span style="color: #94a3b8; font-weight: 600;">Venc. Jogo {{i*2+2}}</span>
+                            <span class="placar-box"></span>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+
+                <div class="column final">
+                    <div class="col-header">Grande Final</div>
+                    <div class="match">
+                        <div class="team">
+                            <span class="team-name">Finalista 1</span>
+                            <span class="placar-box"></span>
+                        </div>
+                        <div class="team">
+                            <span class="team-name">Finalista 2</span>
+                            <span class="placar-box"></span>
+                        </div>
+                    </div>
+                </div>
+
+            {% else %}
+                <div style="width: 100%; text-align: center; border: 2px dashed #ccc; padding: 50px;">
+                    <h3 style="color: #64748b;">Aguardando definição dos classificados.</h3>
+                </div>
+            {% endif %}
+        </div>
+
+        <div class="footer">
+            <span>Sistema FuteDesk</span>
+            <span>Gestão Esportiva Profissional</span>
+        </div>
+
+    </div>
+
+</body>
+</html>

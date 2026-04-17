@@ -1,0 +1,270 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<style>
+    /* --- AJUSTES EXCLUSIVOS PARA O MODO TORNEIO (TEMA ELITE) --- */
+    :root {
+        --color-accent: #00f2ff;
+        --color-success: #10b981;
+        --color-primary: #3b82f6;
+        --color-danger: #ef4444;
+        --glass-border: rgba(255, 255, 255, 0.1);
+        --card-dark: #181a29;
+    }
+
+    /* Força o fundo escuro para combinar com a Sidebar Elite */
+    .main-wrapper { 
+        background-color: #020617 !important; 
+        min-height: 100vh;
+    }
+
+    /* --- HEADER COMPACTO E PROFISSIONAL --- */
+    .tournament-header {
+        background: var(--card-dark);
+        border: 1px solid var(--glass-border);
+        border-radius: 16px;
+        padding: 15px 25px;
+        margin-bottom: 25px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    }
+
+    .header-title h2 {
+        font-family: 'Rajdhani', sans-serif;
+        font-weight: 800;
+        font-size: 1.6rem;
+        margin: 0;
+        background: linear-gradient(90deg, #fff, var(--color-accent));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        text-transform: uppercase;
+        letter-spacing: 2px;
+    }
+
+    .header-stats-mini {
+        display: flex;
+        gap: 20px;
+        padding: 0 20px;
+        border-left: 1px solid var(--glass-border);
+        border-right: 1px solid var(--glass-border);
+        margin: 0 20px;
+    }
+
+    .stat-mini { text-align: center; }
+    .stat-mini-val { color: var(--color-accent); font-weight: 800; font-size: 1.2rem; display: block; line-height: 1; }
+    .stat-mini-lab { color: #64748b; font-size: 0.6rem; text-transform: uppercase; font-weight: 700; }
+
+    /* --- BOTÕES --- */
+    .btn-elite {
+        font-weight: 700;
+        font-size: 0.8rem;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        padding: 10px 18px;
+        border-radius: 8px;
+        transition: 0.3s;
+    }
+
+    /* --- GRUPOS (CARDS) --- */
+    .grid-grupos {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
+        gap: 25px;
+    }
+
+    .card-grupo-elite {
+        background: var(--card-dark);
+        border: 1px solid var(--glass-border);
+        border-radius: 16px;
+        overflow: hidden;
+        transition: 0.3s;
+    }
+    .card-grupo-elite:hover { border-color: var(--color-accent); transform: translateY(-3px); }
+
+    .header-grupo-elite {
+        background: rgba(255,255,255,0.03);
+        padding: 15px 20px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-bottom: 1px solid var(--glass-border);
+    }
+
+    .grupo-name {
+        font-family: 'Rajdhani', sans-serif;
+        font-weight: 700;
+        font-size: 1.2rem;
+    }
+
+    .table-elite { color: #e2e8f0; font-size: 0.9rem; margin-bottom: 0; }
+    .table-elite thead th { background: rgba(0,0,0,0.2); border: none; color: #64748b; font-size: 0.7rem; }
+    .table-elite td { border-bottom: 1px solid rgba(255,255,255,0.05); padding: 12px 10px; vertical-align: middle; }
+
+    .waiting-box {
+        background: rgba(245, 158, 11, 0.05);
+        border: 1px solid rgba(245, 158, 11, 0.2);
+        border-radius: 12px;
+        padding: 20px;
+        margin-bottom: 30px;
+    }
+</style>
+
+<div class="container-fluid py-2">
+
+    <div class="tournament-header">
+        <div class="d-flex align-items-center">
+            <div class="header-title">
+                <h2>Fase de Grupos</h2>
+                <small class="text-muted">Gestão de chaves e classificação</small>
+            </div>
+            
+            <div class="header-stats-mini">
+                <div class="stat-mini">
+                    <span class="stat-mini-val">{% if grupos %}{{ grupos|length }}{% else %}0{% endif %}</span>
+                    <span class="stat-mini-lab">Grupos</span>
+                </div>
+                <div class="stat-mini">
+                    <span class="stat-mini-val">{{ total_times }}</span>
+                    <span class="stat-mini-lab">Equipes</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="d-flex gap-2">
+            <button onclick="document.getElementById('modalConfig').style.display='flex'" class="btn btn-outline-secondary btn-elite">
+                <i class="bi bi-gear-fill"></i>
+            </button>
+            
+            <form action="{{ url_for('gerar_jogos_grupos') }}" method="POST" style="display:inline;">
+                <button type="submit" class="btn btn-success btn-elite">
+                    <i class="bi bi-play-fill me-1"></i> Gerar Jogos
+                </button>
+            </form>
+
+            <button onclick="document.getElementById('modalAddTime').style.display='flex'" class="btn btn-primary btn-elite" style="background: var(--color-primary); border: none;">
+                <i class="bi bi-plus-lg me-1"></i> Time
+            </button>
+        </div>
+    </div>
+
+    {% if times_aguardando %}
+    <div class="waiting-box">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <span class="text-warning fw-bold small"><i class="bi bi-hourglass-split me-1"></i> TIMES NA ESPERA ({{ times_aguardando|length }})</span>
+            <button onclick="document.getElementById('modalSorteio').style.display='flex'" class="btn btn-sm btn-warning fw-bold px-3">
+                <i class="bi bi-shuffle me-1"></i> SORTEAR GRUPOS
+            </button>
+        </div>
+        <div class="d-flex flex-wrap gap-2">
+            {% for time in times_aguardando %}
+                <span class="badge bg-dark border border-secondary p-2">{{ time.nome }}</span>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    {% if grupos %}
+    <div class="grid-grupos">
+        {% set cores = ['#00f2ff', '#10b981', '#f59e0b', '#ec4899'] %}
+        {% for grupo_nome, times in grupos.items() %}
+        {% set cor = cores[loop.index0 % 4] %}
+        
+        <div class="card-grupo-elite">
+            <div class="header-grupo-elite" style="border-top: 3px solid {{ cor }};">
+                <span class="grupo-name" style="color: {{ cor }};">GRUPO {{ grupo_nome }}</span>
+                <i class="bi bi-diagram-3-fill opacity-25" style="color: {{ cor }};"></i>
+            </div>
+            
+            <table class="table table-dark table-hover table-elite">
+                <thead>
+                    <tr class="text-center">
+                        <th width="15%">#</th>
+                        <th width="45%" class="text-start ps-3">EQUIPE</th>
+                        <th>P</th>
+                        <th>J</th>
+                        <th>SG</th>
+                        <th width="10%"></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for time in times %}
+                    <tr class="text-center">
+                        <td class="text-muted fw-bold">{{ loop.index }}º</td>
+                        <td class="text-start ps-3 fw-bold">{{ time.nome }}</td>
+                        <td class="text-info fw-bold">{{ time.P }}</td>
+                        <td>{{ time.J }}</td>
+                        <td class="{{ 'text-success' if time.SG > 0 else 'text-danger' if time.SG < 0 else '' }}">
+                            {{ time.SG }}
+                        </td>
+                        <td>
+                            <a href="{{ url_for('delete_team', id=time.id) }}" class="text-danger opacity-50" onclick="return confirm('Remover {{ time.nome }}?')">
+                                <i class="bi bi-trash"></i>
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+        {% if not times_aguardando %}
+        <div class="text-center py-5" style="background: var(--card-dark); border-radius: 16px; border: 1px dashed var(--glass-border);">
+            <i class="bi bi-trophy-fill display-1 opacity-10 mb-3"></i>
+            <h4 class="text-muted">Nenhum time cadastrado</h4>
+            <p class="text-muted mb-4">Clique no botão + TIME para iniciar o torneio.</p>
+        </div>
+        {% endif %}
+    {% endif %}
+
+</div>
+
+<div id="modalAddTime" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.9); z-index:3000; justify-content:center; align-items:center; backdrop-filter: blur(5px);">
+    <div style="background:var(--card-dark); padding:30px; border-radius:16px; width:360px; border: 1px solid var(--glass-border);">
+        <h5 class="text-center mb-4 fw-bold text-light">Novo Time</h5>
+        <form action="{{ url_for('add_team') }}" method="POST">
+            <input type="text" name="nome_time" class="form-control mb-4 bg-dark text-white border-secondary" placeholder="Nome da Equipe" required>
+            <input type="hidden" name="grupo" value="AGUARDANDO">
+            <div class="d-grid gap-2">
+                <button type="submit" class="btn btn-primary fw-bold">SALVAR</button>
+                <button type="button" onclick="document.getElementById('modalAddTime').style.display='none'" class="btn btn-link text-muted text-decoration-none">Cancelar</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div id="modalConfig" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.9); z-index:3000; justify-content:center; align-items:center;">
+    <div style="background:var(--card-dark); padding:30px; border-radius:16px; width:400px; border: 1px solid var(--color-danger);">
+        <h5 class="text-danger fw-bold mb-4">Configurações Críticas</h5>
+        <form action="{{ url_for('resetar_torneio') }}" method="POST">
+            <button type="submit" name="acao" value="reset_sorteio" class="btn btn-outline-warning w-100 mb-3 text-start p-3">
+                <strong>Resetar Sorteio</strong><br><small>Volta times para lista de espera.</small>
+            </button>
+            <button type="submit" name="acao" value="excluir_tudo" class="btn btn-outline-danger w-100 text-start p-3" onclick="return confirm('Apagar tudo?')">
+                <strong>Excluir Tudo</strong><br><small>Remove todos os times do torneio.</small>
+            </button>
+        </form>
+        <button type="button" onclick="document.getElementById('modalConfig').style.display='none'" class="btn btn-secondary w-100 mt-4">FECHAR</button>
+    </div>
+</div>
+
+<div id="modalSorteio" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.9); z-index:3000; justify-content:center; align-items:center;">
+    <div style="background:var(--card-dark); padding:30px; border-radius:16px; width:340px; border: 1px solid var(--color-accent);">
+        <h5 class="text-center mb-4 fw-bold">Configurar Sorteio</h5>
+        <form action="{{ url_for('sortear_grupos') }}" method="POST">
+            <label class="small text-muted mb-2">Quantidade de Grupos:</label>
+            <select name="qtd_grupos" class="form-select bg-dark text-white border-secondary mb-4">
+                <option value="2">2 Grupos</option>
+                <option value="4" selected>4 Grupos</option>
+                <option value="8">8 Grupos</option>
+            </select>
+            <button type="submit" class="btn btn-info w-100 fw-bold">SORTEAR AGORA</button>
+            <button type="button" onclick="document.getElementById('modalSorteio').style.display='none'" class="btn btn-link text-muted w-100 mt-2 text-decoration-none">Cancelar</button>
+        </form>
+    </div>
+</div>
+
+{% endblock %}

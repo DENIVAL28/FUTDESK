@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Selecionar Categoria - FuteDesk</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@700&family=Inter:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <style>
+        body { 
+            background-color: #0f172a; 
+            color: white; 
+            font-family: 'Inter', sans-serif; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            min-height: 100vh; 
+            margin: 0; 
+            position: relative;
+        }
+        
+        /* Botões de Topo (Discretos) */
+        .top-bar {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            display: flex;
+            gap: 10px;
+        }
+        .btn-top {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            color: #94a3b8;
+            padding: 8px 15px;
+            border-radius: 50px;
+            font-size: 0.85rem;
+            text-decoration: none;
+            font-weight: 600;
+            transition: 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .btn-top:hover { background: rgba(255,255,255,0.1); color: white; }
+        .btn-admin:hover { color: #3b82f6; border-color: #3b82f6; }
+        .btn-logout:hover { color: #ef4444; border-color: #ef4444; }
+
+        /* Card Central */
+        .card-select { 
+            background: #090e1a; 
+            border: 1px solid rgba(255,255,255,0.1); 
+            border-radius: 24px; 
+            padding: 60px 40px; 
+            width: 100%; 
+            max-width: 450px; 
+            text-align: center; 
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5); 
+        }
+        
+        h2 { 
+            font-family: 'Rajdhani', sans-serif; 
+            font-size: 2.5rem; 
+            color: white; 
+            text-transform: uppercase; 
+            margin-bottom: 10px; 
+            font-weight: 800; 
+        }
+        h2 span { color: #00f2ff; }
+        .subtitle { color: #64748b; margin-bottom: 40px; font-size: 0.9rem; }
+        
+        /* Botões de Categoria */
+        .btn-cat { 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            width: 100%; 
+            padding: 20px; 
+            margin-bottom: 15px; 
+            border-radius: 14px; 
+            font-weight: 800; 
+            text-transform: uppercase; 
+            letter-spacing: 1px; 
+            text-decoration: none; 
+            transition: 0.3s; 
+            border: 1px solid rgba(255,255,255,0.1); 
+            background: rgba(255,255,255,0.03); 
+            color: white; 
+            font-size: 1.2rem; 
+        }
+        .btn-cat:hover { 
+            transform: translateY(-3px); 
+            border-color: #00f2ff; 
+            background: rgba(0, 242, 255, 0.1); 
+            color: #00f2ff; 
+            box-shadow: 0 0 20px rgba(0, 242, 255, 0.2); 
+        }
+        .btn-cat i { margin-right: 10px; font-size: 1.5rem; }
+
+    </style>
+</head>
+<body>
+
+    <div class="top-bar">
+        {% if g.user.is_admin %}
+        <a href="{{ url_for('admin_page') }}" class="btn-top btn-admin">
+            <i class="bi bi-shield-lock-fill"></i> Admin
+        </a>
+        {% endif %}
+        <a href="{{ url_for('logout') }}" class="btn-top btn-logout">
+            <i class="bi bi-power"></i> Sair
+        </a>
+    </div>
+
+    <div class="card-select">
+        <h2>Escolha a <span>Categoria</span></h2>
+        <p class="subtitle">Acesse o painel de gerenciamento</p>
+        
+        {% if 'ABERTO' in categorias_permitidas %}
+        <a href="{{ url_for('set_categoria', nome_categoria='ABERTO') }}" class="btn-cat">
+            <i class="bi bi-trophy-fill" style="color: #fbbf24;"></i> Aberto
+        </a>
+        {% endif %}
+        
+        {% if 'VETERANOS' in categorias_permitidas %}
+        <a href="{{ url_for('set_categoria', nome_categoria='VETERANOS') }}" class="btn-cat">
+            <i class="bi bi-person-badge-fill" style="color: #a3a3a3;"></i> Veteranos
+        </a>
+        {% endif %}
+        
+        {% if 'FEMININO' in categorias_permitidas %}
+        <a href="{{ url_for('set_categoria', nome_categoria='FEMININO') }}" class="btn-cat">
+            <i class="bi bi-gender-female" style="color: #f472b6;"></i> Feminino
+        </a>
+        {% endif %}
+
+        {% if not categorias_permitidas %}
+            <div class="text-muted small mt-3">
+                <i class="bi bi-lock-fill"></i> Nenhuma categoria liberada.
+            </div>
+        {% endif %}
+
+    </div>
+</body>
+</html>

@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tabela {{ categoria }} - FuteDesk</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@700&family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+    
+    <style>
+        /* --- TEMA DARK --- */
+        :root { 
+            --dark-bg: #0f172a; 
+            --dark-solid: #090e1a; 
+            --neon-blue: #00f2ff; 
+            --text-light: #f1f5f9; 
+            --text-grey: #94a3b8; 
+            --primary-blue: #3b82f6; 
+            --glass-border: rgba(255,255,255,0.1); 
+        }
+        body { 
+            background-color: var(--dark-bg); 
+            color: var(--text-light); 
+            font-family: 'Inter', sans-serif; 
+            padding: 20px; 
+        }
+        
+        .header-public { text-align: center; margin-bottom: 40px; margin-top: 20px; }
+        .header-public h2 { 
+            font-family: 'Rajdhani', sans-serif; 
+            font-weight: 800; 
+            font-size: 3rem; 
+            color: white; 
+            margin: 0; 
+            text-transform: uppercase; 
+            letter-spacing: 2px; 
+            text-shadow: 0 0 20px rgba(0,0,0,0.5); 
+        }
+        .header-public span { 
+            color: var(--neon-blue); 
+            font-weight: 700; 
+            letter-spacing: 3px; 
+            text-transform: uppercase; 
+            font-size: 1.2rem; 
+            display: block; 
+            margin-top: 5px; 
+        }
+        
+        .card-table { 
+            background: var(--dark-solid); 
+            border: 1px solid var(--glass-border); 
+            border-radius: 20px; 
+            box-shadow: 0 10px 40px rgba(0,0,0,0.6); 
+            overflow: hidden; 
+            max-width: 1000px; 
+            margin: 0 auto; 
+        }
+        
+        .table-pro { width: 100%; border-collapse: collapse; color: var(--text-light); }
+        .table-pro th { 
+            background: rgba(255,255,255,0.03); 
+            color: var(--text-grey); 
+            font-size: 0.8rem; 
+            font-weight: 800; 
+            text-transform: uppercase; 
+            padding: 20px 10px; 
+            text-align: center; 
+            border-bottom: 2px solid var(--glass-border); 
+        }
+        .table-pro td { 
+            padding: 18px 10px; 
+            background: var(--dark-solid); 
+            border-bottom: 1px solid rgba(255,255,255,0.05); 
+            text-align: center; 
+            font-weight: 600; 
+            vertical-align: middle; 
+            font-size: 1rem; 
+        }
+        .table-pro tr:last-child td { border-bottom: none; }
+        
+        .col-clube { text-align: left !important; padding-left: 30px !important; width: 40%; }
+        .team-name { color: white; font-size: 1.2rem; margin-left: 15px; font-weight: 700; }
+        .td-pts { 
+            color: var(--neon-blue); 
+            font-weight: 800; 
+            font-size: 1.4rem; 
+            background: rgba(0, 242, 255, 0.05) !important; 
+        }
+        
+        .team-letter { 
+            display: inline-flex; 
+            width: 36px; height: 36px; 
+            background: linear-gradient(135deg, #333, #111); 
+            color: white; 
+            align-items: center; justify-content: center; 
+            border-radius: 10px; 
+            font-weight: 800; 
+            border: 1px solid rgba(255,255,255,0.1); 
+        }
+
+        .btn-voltar { 
+            position: fixed; 
+            top: 25px; left: 25px; 
+            background: rgba(255,255,255,0.05); 
+            color: var(--text-grey); 
+            border: 1px solid var(--glass-border); 
+            padding: 10px 20px; 
+            border-radius: 12px; 
+            text-decoration: none; 
+            font-weight: 700; 
+            transition: 0.3s; 
+            text-transform: uppercase; 
+            font-size: 0.85rem; 
+            z-index: 100; 
+            backdrop-filter: blur(10px); 
+        }
+        .btn-voltar:hover { 
+            background: var(--primary-blue); 
+            border-color: var(--primary-blue); 
+            color: white; 
+        }
+        
+        /* Responsivo */
+        @media (max-width: 768px) {
+            .header-public h2 { font-size: 2rem; }
+            .team-name { font-size: 1rem; }
+            .btn-voltar { position: static; display: inline-block; margin-bottom: 20px; }
+            body { padding: 15px; }
+        }
+    </style>
+</head>
+<body>
+
+    <a href="{{ url_for('publico_selecionar', user_id=user_id) }}" class="btn-voltar">
+        <i class="bi bi-arrow-left me-2"></i> Voltar
+    </a>
+
+    <div class="header-public">
+        <h2>{{ nome_campeonato }}</h2>
+        <span>Categoria {{ categoria }} • Rodada {{ rodada }}</span>
+    </div>
+
+    <div class="card-table">
+        <div class="table-responsive">
+            <table class="table-pro">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th class="col-clube">Clube</th>
+                        <th>PTS</th>
+                        <th>J</th>
+                        <th>V</th>
+                        <th>E</th>
+                        <th>D</th>
+                        <th>SG</th>
+                        <th>%</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for t in times %}
+                    <tr>
+                        <td style="color: var(--text-grey); font-weight: 800;">{{ loop.index }}º</td>
+                        <td class="col-clube">
+                            <span class="team-letter">{{ t.nome[:1] }}</span>
+                            <span class="team-name">{{ t.nome }}</span>
+                        </td>
+                        <td class="td-pts">{{ t.P }}</td>
+                        <td>{{ t.J }}</td>
+                        <td style="color: #10b981;">{{ t.V }}</td>
+                        <td style="color: var(--text-grey);">{{ t.E }}</td>
+                        <td style="color: #ef4444;">{{ t.D }}</td>
+                        <td style="color: var(--neon-blue); font-weight: 700;">{{ t.SG }}</td>
+                        <td style="font-size: 0.9rem; color: var(--neon-blue);">{{ "%.0f"|format((t.P / (t.J * 3)) * 100) if t.J > 0 else 0 }}%</td>
+                    </tr>
+                    {% else %}
+                    <tr><td colspan="9" style="padding: 40px; color: var(--text-grey);">Tabela ainda não iniciada.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div style="text-align: center; margin-top: 40px; color: var(--text-grey); font-size: 0.8rem; opacity: 0.6;">
+        Sistema FuteDesk • Powered by Denival Neto
+    </div>
+
+</body>
+</html>

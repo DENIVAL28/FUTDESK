@@ -1,0 +1,188 @@
+{% extends 'base.html' %}
+
+{% block title %}Gerador Automático - FuteDesk{% endblock %}
+
+{% block content %}
+<style>
+    /* --- ESTILOS ESPECÍFICOS DO GERADOR --- */
+    :root {
+        --dark-bg: #0f172a; 
+        --dark-solid: #090e1a; 
+        --glass-border: rgba(255, 255, 255, 0.1);
+        --text-light: #f1f5f9; 
+        --neon-blue: #00f2ff;
+        --primary-blue: #3b82f6; 
+        --secondary-green: #10b981;
+    }
+
+    .main-wrapper { background-color: var(--dark-bg) !important; }
+
+    /* CARD ESQUERDA (INPUT) */
+    .card-gerador { 
+        background: var(--dark-solid); 
+        border-radius: 16px; 
+        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5); 
+        overflow: hidden; 
+        height: 100%; 
+        border: 1px solid var(--glass-border); 
+    }
+
+    .card-header-gerador { 
+        background: linear-gradient(135deg, var(--primary-blue), #1e3a8a); 
+        padding: 30px 20px; 
+        text-align: center; 
+        border-bottom: 1px solid var(--glass-border); 
+    }
+    
+    .gerador-icon { font-size: 3rem; margin-bottom: 10px; color: white; filter: drop-shadow(0 0 10px rgba(255,255,255,0.3)); }
+    .gerador-title { font-family: 'Rajdhani', sans-serif; font-weight: 800; text-transform: uppercase; font-size: 1.5rem; color: white; margin: 0; }
+    .gerador-subtitle { color: #bfdbfe; font-size: 0.9rem; margin-top: 5px; }
+
+    /* CAIXA DE TEXTO (CORRIGIDA) */
+    .times-textarea { 
+        background: rgba(255, 255, 255, 0.07) !important; /* Fundo mais visível */
+        border: 1px solid var(--glass-border) !important; 
+        border-radius: 10px; 
+        padding: 15px; 
+        font-family: 'Inter', sans-serif; 
+        font-weight: 500; 
+        color: white !important; /* Texto branco */
+        resize: vertical; 
+        min-height: 250px; 
+    }
+    .times-textarea:focus { 
+        background: rgba(255, 255, 255, 0.1) !important; 
+        border-color: var(--neon-blue) !important; 
+        outline: none; 
+        box-shadow: 0 0 0 3px rgba(0, 242, 255, 0.15); 
+    }
+    .times-textarea::placeholder { color: #94a3b8; opacity: 0.7; }
+
+    /* BOTÃO GERAR */
+    .btn-gerar { 
+        background: var(--secondary-green); border: none; border-radius: 10px; padding: 15px; width: 100%;
+        font-weight: 800; text-transform: uppercase; color: white; transition: 0.3s; letter-spacing: 1px;
+        box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
+    }
+    .btn-gerar:hover { background: #059669; transform: translateY(-2px); box-shadow: 0 6px 20px rgba(16, 185, 129, 0.5); }
+
+    /* SWITCH (CHECKBOX) */
+    .form-check-input { 
+        background-color: rgba(255,255,255,0.1); border-color: #64748b; width: 3em; height: 1.5em; cursor: pointer;
+    }
+    .form-check-input:checked { background-color: var(--primary-blue); border-color: var(--primary-blue); }
+    .form-check-label { color: var(--text-light); margin-left: 10px; font-weight: 500; cursor: pointer; }
+
+    /* PAINEL DIREITA (RESULTADOS) */
+    .resultado-painel {
+        background: var(--dark-solid); border-radius: 16px; border: 1px solid var(--glass-border);
+        padding: 20px; height: 100%; display: flex; flex-direction: column; box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5); 
+    }
+    .rodadas-scroll { max-height: 700px; overflow-y: auto; padding-right: 10px; flex-grow: 1; }
+
+    /* CARD DA RODADA */
+    .rodada-card { 
+        background: rgba(255, 255, 255, 0.03); border-radius: 12px; border: 1px solid var(--glass-border); 
+        margin-bottom: 20px; overflow: hidden; 
+    }
+    .rodada-header { 
+        background: rgba(59, 130, 246, 0.15); padding: 12px; font-weight: 700; color: var(--neon-blue); 
+        text-transform: uppercase; font-size: 0.9rem; border-bottom: 1px solid var(--glass-border);
+        display: flex; align-items: center;
+    }
+    .jogo-row { 
+        padding: 10px 15px; border-bottom: 1px solid rgba(255,255,255,0.05); 
+        display: flex; justify-content: space-between; align-items: center; color: white; font-size: 0.95rem;
+    }
+    .jogo-row:last-child { border-bottom: none; }
+    .vs-badge { 
+        background: var(--neon-blue); color: #000; font-weight: 800; padding: 2px 8px; 
+        border-radius: 50px; font-size: 0.75rem; margin: 0 10px; 
+    }
+
+    /* ESTADO VAZIO */
+    .empty-state { color: #64748b; text-align: center; margin-top: 80px; }
+    .empty-state i { opacity: 0.3; font-size: 4rem; margin-bottom: 15px; display: block; }
+    .empty-state h5 { color: var(--text-light); font-weight: 700; }
+
+</style>
+
+<div class="container-fluid py-4">
+    <div class="row g-4">
+        
+        <div class="col-lg-4">
+            <div class="card-gerador"> 
+                <div class="card-header-gerador">
+                    <i class="bi bi-magic fs-1 d-block mb-2 text-white"></i>
+                    <h3 class="gerador-title">Gerador de Jogos</h3>
+                    <p class="gerador-subtitle mb-0">Crie confrontos todos contra todos automaticamente.</p>
+                </div>
+                <div class="card-body p-4">
+                    <form method="POST">
+                        
+                        <div class="mb-4">
+                            <label class="form-label small fw-bold text-uppercase mb-2" style="color: #94a3b8;">Lista de Times (Um por linha)</label>
+                            <textarea class="form-control times-textarea" name="lista_times" rows="10" placeholder="Exemplo:&#10;Vila Nova&#10;Santa Terezinha&#10;Confresa&#10;Porto Alegre" required>{% if teams_input %}{{ teams_input }}{% endif %}</textarea>
+                        </div>
+                        
+                        <div class="form-check form-switch mb-4 ps-5">
+                            <input class="form-check-input" type="checkbox" id="ida_volta" name="ida_volta" {% if ida_volta %}checked{% endif %} style="transform: scale(1.3);">
+                            <label class="form-check-label ms-2 pt-1" for="ida_volta">Gerar Turno e Returno (Ida e Volta)</label>
+                        </div>
+                        
+                        <button type="submit" class="btn-gerar">
+                            <i class="bi bi-play-fill me-2"></i> Gerar Tabela
+                        </button>
+
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-8">
+            <div class="resultado-painel">
+                <div class="rodadas-scroll">
+                    
+                    {% if rodadas %}
+                        <h4 class="text-center fw-bold mb-4 text-uppercase" style="color: var(--text-light); font-family: 'Rajdhani', sans-serif;">
+                            <i class="bi bi-table me-2 text-primary"></i> Tabela Gerada
+                        </h4>
+                        
+                        <div class="row">
+                        {% for rodada_num, jogos in rodadas.items() %}
+                            <div class="col-md-6">
+                                <div class="rodada-card">
+                                    <div class="rodada-header">
+                                        <i class="bi bi-calendar-week me-2"></i> Rodada {{ rodada_num }} 
+                                    </div>
+                                    {% for jogo in jogos %}
+                                    <div class="jogo-row">
+                                        <span class="w-50 text-end text-truncate pe-2">{{ jogo[0] }}</span>
+                                        <span class="vs-badge">X</span>
+                                        <span class="w-50 text-start text-truncate ps-2">{{ jogo[1] }}</span>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        {% endfor %}
+                        </div>
+                        
+                        <div class="alert mt-3 border-0 text-center" style="background: rgba(59, 130, 246, 0.15); color: #93c5fd;">
+                            <i class="bi bi-info-circle-fill me-2"></i> Copie os confrontos e cadastre na aba <strong>Jogos</strong>.
+                        </div>
+
+                    {% else %}
+                        <div class="empty-state">
+                            <i class="bi bi-clipboard-data"></i>
+                            <h5>Nenhuma tabela gerada ainda.</h5>
+                            <p class="small">Insira os times ao lado e clique em Gerar.</p>
+                        </div>
+                    {% endif %}
+                    
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+{% endblock %}

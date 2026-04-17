@@ -1,0 +1,258 @@
+{% extends 'base.html' %}
+
+{% block title %}Registrar Usuário - FuteDesk{% endblock %}
+
+{% block content %}
+<style>
+    /* --- ESTILOS ESPECÍFICOS PARA REGISTRO (FUTEDESK DARK) --- */
+    
+    /* Garante que as variáveis estejam disponíveis neste escopo */
+    :root {
+        --dark-bg: #0f172a;
+        --dark-solid: #090e1a;
+        --glass-border: rgba(255, 255, 255, 0.1);
+        --text-light: #f1f5f9;
+        --text-grey: #94a3b8;
+        --neon-blue: #00f2ff;
+        --primary-blue: #3b82f6;
+        --success-green: #10b981;
+    }
+
+    /* Força o fundo escuro na página */
+    .main-wrapper { 
+        background-color: var(--dark-bg) !important; 
+    }
+
+    .card-register {
+        background-color: var(--dark-solid);
+        border: 1px solid var(--glass-border);
+        border-radius: 20px;
+        box-shadow: 0 10px 50px rgba(0, 0, 0, 0.7);
+        color: var(--text-light);
+        max-width: 600px;
+        margin: 40px auto;
+        padding: 40px;
+    }
+
+    .register-title {
+        font-family: 'Rajdhani', sans-serif;
+        font-size: 2rem;
+        font-weight: 800;
+        text-transform: uppercase;
+        color: var(--text-light);
+        text-align: center;
+        margin-bottom: 30px;
+        border-bottom: 2px solid var(--primary-blue);
+        padding-bottom: 15px;
+        letter-spacing: 1px;
+    }
+
+    /* Estilização dos Campos */
+    .form-label { 
+        color: var(--text-grey); 
+        font-weight: 700; 
+        font-size: 0.85rem; 
+        text-transform: uppercase; 
+        margin-bottom: 8px;
+        display: block;
+    }
+    
+    .form-control { 
+        background-color: rgba(255, 255, 255, 0.05) !important; 
+        border: 1px solid var(--glass-border); 
+        color: var(--text-light) !important; 
+        border-radius: 10px; 
+        padding: 12px; 
+    }
+    
+    .form-control:focus { 
+        background-color: rgba(255, 255, 255, 0.1) !important; 
+        border-color: var(--neon-blue); 
+        box-shadow: 0 0 0 4px rgba(0, 242, 255, 0.1); 
+        color: white !important; 
+    }
+    
+    .form-text { color: #64748b; }
+
+    /* Checkbox Categorias (Botões Visuais) */
+    .cat-check-group {
+        display: flex; 
+        gap: 15px; 
+        justify-content: center; 
+        margin-top: 10px;
+        flex-wrap: wrap;
+    }
+    
+    .cat-option {
+        position: relative;
+        cursor: pointer;
+    }
+    
+    /* Esconde o checkbox original */
+    .cat-option input[type="checkbox"] {
+        position: absolute; 
+        opacity: 0; 
+        cursor: pointer;
+        height: 0; 
+        width: 0;
+    }
+    
+    /* Estilo do botão falso */
+    .cat-box {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 10px 25px;
+        border: 1px solid var(--glass-border);
+        border-radius: 8px;
+        background: rgba(255,255,255,0.05);
+        color: var(--text-grey);
+        font-weight: 700;
+        text-transform: uppercase;
+        transition: 0.3s;
+        font-size: 0.9rem;
+    }
+    
+    /* Quando marcado */
+    .cat-option input:checked + .cat-box {
+        background: var(--primary-blue);
+        color: white;
+        border-color: var(--primary-blue);
+        box-shadow: 0 0 15px rgba(59, 130, 246, 0.5);
+    }
+
+    /* Checkbox Mural Público */
+    .form-check-input {
+        background-color: rgba(255,255,255,0.1);
+        border-color: var(--text-grey);
+        width: 1.2em; height: 1.2em;
+        margin-top: 0.1em;
+    }
+    .form-check-input:checked {
+        background-color: var(--success-green);
+        border-color: var(--success-green);
+    }
+    .form-check-label {
+        color: var(--text-light);
+        font-weight: 500;
+        margin-left: 8px;
+    }
+
+    /* Botões de Ação */
+    .btn-register { 
+        background: var(--success-green); 
+        border: none; 
+        padding: 14px; 
+        font-weight: 800; 
+        color: white; 
+        border-radius: 10px; 
+        width: 100%; 
+        margin-top: 30px; 
+        transition: 0.3s; 
+        text-transform: uppercase; 
+        letter-spacing: 1px; 
+    }
+    .btn-register:hover { 
+        background: #059669; 
+        transform: translateY(-2px); 
+        box-shadow: 0 5px 15px rgba(16, 185, 129, 0.3); 
+        color: white;
+    }
+    
+    .btn-back { 
+        display: block; 
+        text-align: center; 
+        margin-top: 20px; 
+        color: var(--text-grey); 
+        text-decoration: none; 
+        font-weight: 600; 
+        transition: 0.2s;
+    }
+    .btn-back:hover { color: var(--text-light); text-decoration: underline; }
+    
+    .info-text { 
+        background: rgba(59, 130, 246, 0.1); 
+        border-left: 4px solid var(--primary-blue); 
+        padding: 12px; 
+        margin-bottom: 20px; 
+        border-radius: 4px; 
+        color: #93c5fd; 
+        font-size: 0.85rem; 
+    }
+
+</style>
+
+<div class="container">
+    <div class="card-register">
+        <h2 class="register-title"><i class="bi bi-person-plus-fill me-2"></i> Novo Cliente</h2>
+        
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ 'danger' if category == 'error' else 'success' }} mb-4 shadow-sm">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <form method="POST">
+            <div class="mb-3">
+                <label class="form-label">Usuário (Login)</label>
+                <input type="text" name="username" class="form-control" placeholder="Ex: vilaprefeitura" required autofocus>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label" style="color: var(--neon-blue);">Nome do Campeonato</label>
+                <input type="text" name="nome_campeonato" class="form-control" placeholder="Ex: COPA VILA RICA 2025" required>
+                <div class="form-text">Nome visível para o público e no mural.</div>
+            </div>
+
+            <div class="mb-4 text-center">
+                <label class="form-label d-block mb-2">Categorias Permitidas</label>
+                <div class="cat-check-group">
+                    <label class="cat-option">
+                        <input type="checkbox" name="categorias" value="ABERTO" checked>
+                        <span class="cat-box">Aberto</span>
+                    </label>
+                    <label class="cat-option">
+                        <input type="checkbox" name="categorias" value="VETERANOS" checked>
+                        <span class="cat-box">Veteranos</span>
+                    </label>
+                    <label class="cat-option">
+                        <input type="checkbox" name="categorias" value="FEMININO" checked>
+                        <span class="cat-box">Feminino</span>
+                    </label>
+                </div>
+            </div>
+
+            <div class="mb-4 p-3" style="background: rgba(255,255,255,0.03); border-radius: 10px;">
+                <div class="form-check">
+                    <input type="checkbox" class="form-check-input" id="postarMural" name="postar_no_mural" checked>
+                    <label class="form-check-label" for="postarMural">
+                        Exibir este campeonato no Mural Público?
+                    </label>
+                </div>
+                <div class="form-text ms-4 mt-1">Se marcado, aparecerá em <i>/publico/campeonatos</i>.</div>
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Senha</label>
+                <input type="password" name="password" class="form-control" placeholder="Mínimo 8 caracteres" required>
+            </div>
+
+            <div class="info-text">
+                <i class="bi bi-shield-lock-fill me-1"></i>
+                Senha segura obrigatória: Use Maiúscula, Minúscula, Número e Símbolo (ex: @, #).
+            </div>
+
+            <button type="submit" class="btn-register">
+                <i class="bi bi-check-circle-fill me-2"></i> Criar Licença
+            </button>
+            
+            <a href="{{ url_for('admin_page') }}" class="btn-back">
+                <i class="bi bi-arrow-left"></i> Voltar para Painel
+            </a>
+        </form>
+    </div>
+</div>
+{% endblock %}

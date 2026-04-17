@@ -1,0 +1,259 @@
+{% extends 'base.html' %}
+
+{% block title %}Editar Time - FuteDesk{% endblock %}
+
+{% block content %}
+<style>
+    :root {
+        --color-bg: #0c0d1b;
+        --color-card: #151725;
+        --color-accent: #00f2ff;
+        --color-success: #10b981;
+        --color-danger: #ef4444;
+        --color-text-light: #ffffff;
+        --color-text-muted: #94a3b8;
+        --glass-border: rgba(255, 255, 255, 0.1);
+    }
+
+    body { background-color: var(--color-bg); }
+
+    .edit-container {
+        max-width: 900px;
+        margin: 40px auto;
+        padding: 0 15px;
+    }
+
+    /* CARD PRINCIPAL */
+    .card-edit {
+        background: var(--color-card);
+        border: 1px solid var(--glass-border);
+        border-radius: 16px;
+        box-shadow: 0 0 50px rgba(0,0,0,0.5);
+        overflow: hidden;
+        position: relative;
+    }
+    .card-edit::before {
+        content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 3px;
+        background: linear-gradient(90deg, var(--color-accent), var(--color-success));
+    }
+
+    /* CABEÇALHO */
+    .card-header-edit {
+        text-align: center;
+        padding: 40px 20px 20px;
+        border-bottom: 1px solid var(--glass-border);
+    }
+    .team-title {
+        font-family: 'Rajdhani', sans-serif;
+        font-size: 3rem;
+        font-weight: 800;
+        text-transform: uppercase;
+        color: white;
+        margin: 0;
+        text-shadow: 0 0 20px rgba(255,255,255,0.1);
+    }
+    .team-id {
+        color: var(--color-text-muted);
+        font-size: 0.9rem;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+    }
+
+    .card-body-edit { padding: 40px; }
+
+    /* GRID DE ESTATÍSTICAS (BIG NUMBERS) */
+    .section-label {
+        color: var(--color-text-light);
+        font-weight: 700;
+        text-transform: uppercase;
+        margin-bottom: 15px;
+        display: flex; align-items: center; gap: 10px;
+        font-size: 0.9rem;
+    }
+    .section-label i { color: var(--color-accent); }
+
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 15px;
+        margin-bottom: 30px;
+    }
+
+    .stat-box {
+        background: rgba(255,255,255,0.03);
+        border: 1px solid var(--glass-border);
+        border-radius: 12px;
+        padding: 20px;
+        text-align: center;
+        transition: 0.3s;
+    }
+    .stat-box:hover {
+        background: rgba(255,255,255,0.05);
+        transform: translateY(-2px);
+    }
+    
+    .stat-box.win:hover { border-color: var(--color-success); }
+    .stat-box.loss:hover { border-color: var(--color-danger); }
+
+    .stat-title {
+        font-size: 0.75rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        margin-bottom: 10px;
+        display: block;
+    }
+    .text-win { color: var(--color-success); }
+    .text-draw { color: var(--color-text-muted); }
+    .text-loss { color: var(--color-danger); }
+
+    /* INPUTS GIGANTES SEM BORDAS */
+    .big-input {
+        width: 100%;
+        background: transparent;
+        border: none;
+        color: white;
+        font-family: 'Rajdhani', sans-serif;
+        font-size: 4rem;
+        font-weight: 700;
+        text-align: center;
+        line-height: 1;
+        outline: none;
+        padding: 0;
+    }
+    .big-input:focus { text-shadow: 0 0 15px rgba(255,255,255,0.3); }
+
+    /* GRID GOLS */
+    .goals-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 15px;
+        margin-bottom: 30px;
+    }
+    .goal-box {
+        background: rgba(0, 242, 255, 0.05);
+        border: 1px solid rgba(0, 242, 255, 0.2);
+        border-radius: 12px;
+        padding: 15px 25px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    .goal-box.contra {
+        background: rgba(239, 68, 68, 0.05);
+        border-color: rgba(239, 68, 68, 0.2);
+    }
+    
+    .goal-label { font-size: 1.2rem; font-weight: 800; }
+    .goal-input {
+        width: 80px;
+        background: transparent; border: none;
+        color: white; font-family: 'Rajdhani', sans-serif;
+        font-size: 2.5rem; font-weight: 700; text-align: right;
+        outline: none;
+    }
+
+    /* INPUT URL */
+    .input-group-dark {
+        background: rgba(0,0,0,0.3);
+        border: 1px solid var(--glass-border);
+        border-radius: 8px;
+        display: flex;
+        padding: 5px;
+    }
+    .input-dark {
+        background: transparent; border: none; color: white;
+        flex-grow: 1; padding: 10px; outline: none;
+    }
+
+    /* BOTÕES */
+    .btn-save {
+        background: var(--color-primary-button);
+        color: white; border: none; width: 100%; padding: 15px;
+        font-weight: 700; text-transform: uppercase; letter-spacing: 1px;
+        border-radius: 8px; font-size: 1rem; cursor: pointer;
+        transition: 0.3s;
+        margin-top: 20px;
+    }
+    .btn-save:hover { background: #4a50e0; box-shadow: 0 0 20px rgba(92, 98, 236, 0.5); }
+    
+    /* Remove setas do input number */
+    input::-webkit-outer-spin-button, input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+    input[type=number] { -moz-appearance: textfield; }
+
+</style>
+
+<div class="edit-container">
+    <div class="card-edit">
+        <form action="{{ url_for('update_team', id=time.id) }}" method="POST">
+            
+            <div class="card-header-edit">
+                <h2 class="team-title">{{ time.nome }}</h2>
+                <span class="team-id">ID: {{ time.id }} • EDITAR ESTATÍSTICAS</span>
+            </div>
+
+            <div class="card-body-edit">
+                
+                <div class="section-label"><i class="bi bi-trophy"></i> Resultados de Jogo</div>
+                <div class="stats-grid">
+                    <div class="stat-box win">
+                        <span class="stat-title text-win">Vitórias (V)</span>
+                        <input type="number" name="V" value="{{ time.V }}" class="big-input">
+                        <small class="text-muted">+3 pts cada</small>
+                    </div>
+                    <div class="stat-box draw">
+                        <span class="stat-title text-draw">Empates (E)</span>
+                        <input type="number" name="E" value="{{ time.E }}" class="big-input">
+                        <small class="text-muted">+1 pt cada</small>
+                    </div>
+                    <div class="stat-box loss">
+                        <span class="stat-title text-loss">Derrotas (D)</span>
+                        <input type="number" name="D" value="{{ time.D }}" class="big-input">
+                        <small class="text-muted">0 pts</small>
+                    </div>
+                </div>
+
+                <div class="section-label"><i class="bi bi-bullseye"></i> Saldo de Gols</div>
+                <div class="goals-grid">
+                    <div class="goal-box">
+                        <div class="goal-label" style="color: var(--color-accent);">GP</div>
+                        <input type="number" name="GM" value="{{ time.GM }}" class="goal-input">
+                    </div>
+                    <div class="goal-box contra">
+                        <div class="goal-label" style="color: var(--color-danger);">GC</div>
+                        <input type="number" name="GS" value="{{ time.GS }}" class="goal-input">
+                    </div>
+                </div>
+
+                <div class="section-label"><i class="bi bi-image"></i> Identidade Visual & Grupo</div>
+                <div class="input-group-dark mb-3">
+                    <span style="padding: 10px; color: #666;"><i class="bi bi-link-45deg"></i></span>
+                    <input type="text" name="logo_url" value="{{ time.logo_url or '' }}" class="input-dark" placeholder="URL da Logo do Time (https://...)">
+                </div>
+
+                {% if time.modo_disputa == 'CUP' %}
+                <div class="input-group-dark">
+                    <span style="padding: 10px; color: #666;"><i class="bi bi-grid"></i></span>
+                    <select name="grupo" class="input-dark" style="background: transparent; cursor: pointer;">
+                        <option value="AGUARDANDO" {% if time.grupo == 'AGUARDANDO' %}selected{% endif %} style="color: black;">Aguardando</option>
+                        {% for letra in ['A','B','C','D','E','F','G','H','I','J'] %}
+                            <option value="{{ letra }}" {% if time.grupo == letra %}selected{% endif %} style="color: black;">Grupo {{ letra }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                {% else %}
+                    <input type="hidden" name="grupo" value="{{ time.grupo }}">
+                {% endif %}
+
+                <button type="submit" class="btn-save">
+                    <i class="bi bi-check-circle-fill me-2"></i> SALVAR ALTERAÇÕES
+                </button>
+                
+                <div class="text-center mt-3">
+                    <a href="{{ url_for('fase_grupos_page' if time.modo_disputa == 'CUP' else 'index') }}" style="color: #666; text-decoration: none; font-size: 0.9rem;">CANCELAR</a>
+                </div>
+
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

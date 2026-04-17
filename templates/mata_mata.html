@@ -1,0 +1,264 @@
+{% extends 'base.html' %}
+
+{% block title %}Mata-Mata - FuteDesk{% endblock %}
+
+{% block content %}
+<style>
+    /* --- VARIÁVEIS GERAIS (FUTEDESK DARK) --- */
+    :root {
+        --dark-bg: #0f172a;
+        --dark-solid: #090e1a;
+        --glass-border: rgba(255, 255, 255, 0.1);
+        --text-light: #f1f5f9;
+        --text-grey: #94a3b8;
+        --neon-blue: #00f2ff;
+        --gold-color: #fbbf24;
+        --primary-blue: #3b82f6;
+        --purple-accent: #6610f2;
+    }
+
+    /* Força fundo escuro */
+    .main-wrapper { background-color: var(--dark-bg) !important; }
+
+    /* Card Principal */
+    .card-matamata {
+        background: var(--dark-solid);
+        border: 1px solid var(--glass-border);
+        border-radius: 16px;
+        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5);
+        overflow: hidden;
+        margin-bottom: 20px;
+    }
+
+    .card-header-matamata {
+        background: var(--dark-solid);
+        padding: 25px 30px;
+        border-bottom: 1px solid var(--glass-border);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .matamata-title {
+        font-family: 'Rajdhani', sans-serif;
+        font-size: 1.8rem;
+        font-weight: 700;
+        color: var(--text-light);
+        margin: 0;
+        text-transform: uppercase;
+        display: flex;
+        align-items: center;
+    }
+    .matamata-title::before {
+        content: ''; display: inline-block; width: 5px; height: 30px;
+        background: var(--purple-accent);
+        margin-right: 15px;
+        border-radius: 4px;
+        box-shadow: 0 0 10px rgba(102, 16, 242, 0.5);
+    }
+
+    /* Botão Imprimir */
+    .btn-print {
+        background: transparent;
+        border: 1px solid var(--glass-border);
+        color: var(--text-grey);
+        padding: 8px 20px;
+        border-radius: 10px;
+        font-weight: 600;
+        text-decoration: none;
+        transition: 0.3s;
+    }
+    .btn-print:hover {
+        border-color: var(--text-light);
+        color: var(--text-light);
+        background: rgba(255, 255, 255, 0.05);
+    }
+
+    /* Estilo do Chaveamento (Bracket) */
+    .bracket-container {
+        display: flex;
+        justify-content: center;
+        padding: 40px 20px;
+        overflow-x: auto;
+        background: var(--dark-bg); 
+        min-height: 600px;
+    }
+    .bracket-column {
+        display: flex;
+        flex-direction: column;
+        justify-content: space-around;
+        min-width: 280px;
+        margin: 0 30px;
+        position: relative;
+    }
+    .bracket-header {
+        text-align: center;
+        font-weight: 800;
+        color: var(--neon-blue);
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        margin-bottom: 30px;
+        font-size: 1.1rem;
+        text-shadow: 0 0 10px rgba(0, 242, 255, 0.3);
+    }
+    
+    /* Card do Jogo */
+    .match-card {
+        background: var(--dark-solid);
+        border-radius: 12px;
+        border: 1px solid var(--glass-border);
+        padding: 0;
+        margin: 20px 0;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+        position: relative;
+        z-index: 2;
+        transition: 0.3s;
+    }
+    .match-card:hover {
+        transform: translateY(-3px);
+        border-color: var(--primary-blue);
+        box-shadow: 0 0 15px rgba(59, 130, 246, 0.2);
+    }
+
+    .team-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 12px 15px;
+        font-weight: 600;
+        color: var(--text-light);
+        font-size: 0.95rem;
+    }
+    .team-row:first-child { border-bottom: 1px solid rgba(255, 255, 255, 0.05); }
+    
+    .team-name-mm {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    .team-name-mm i { color: var(--text-grey); }
+    
+    /* 💥 CORREÇÃO: Estilo para o Rank (ex: 8º) */
+    .team-rank-badge {
+        color: var(--neon-blue); /* Azul Neon para destaque */
+        font-size: 0.8rem;
+        font-weight: 700;
+        margin-left: 6px;
+    }
+
+    /* 💥 CORREÇÃO: Estilo para Placeholder (Vencedor Q1) */
+    .placeholder-text {
+        color: var(--text-grey) !important; /* Cinza claro visível */
+        font-style: italic;
+        opacity: 0.8;
+    }
+    
+    .team-score {
+        background: rgba(255, 255, 255, 0.05);
+        color: var(--text-grey);
+        padding: 5px 10px;
+        border-radius: 6px;
+        font-weight: 800;
+        min-width: 35px;
+        text-align: center;
+    }
+
+    /* Final */
+    .final-match .match-card {
+        border: 2px solid var(--gold-color);
+        box-shadow: 0 0 20px rgba(251, 191, 36, 0.1);
+    }
+    .final-match .bracket-header { color: var(--gold-color); text-shadow: none; }
+    .final-match .team-name-mm { color: var(--gold-color); font-weight: 800; }
+
+    /* Conectores do Bracket (Linhas) */
+    .bracket-column:not(:last-child) .match-card::after {
+        content: ''; position: absolute; right: -30px; top: 50%; width: 30px; height: 2px; background: var(--glass-border);
+    }
+    .bracket-column:not(:first-child) .match-card::before {
+        content: ''; position: absolute; left: -30px; top: 50%; width: 30px; height: 2px; background: var(--glass-border);
+    }
+    /* Linhas verticais */
+    .bracket-column:nth-child(1) .match-card:nth-child(2n)::after {
+        height: calc(100% + 40px); top: -50%; right: -30px; border-right: 2px solid var(--glass-border); width: 2px; background: transparent;
+    }
+    .bracket-column:nth-child(2) .match-card:nth-child(2n)::after {
+        height: calc(100% + 40px); top: -50%; right: -30px; border-right: 2px solid var(--glass-border); width: 2px; background: transparent;
+    }
+</style>
+
+<div class="container-fluid mt-2">
+    <div class="card-matamata">
+        <div class="card-header-matamata">
+            <h2 class="matamata-title">Chaveamento Final</h2>
+            <a href="{{ url_for('imprimir_mata_mata') }}" target="_blank" class="btn-print">
+                <i class="bi bi-printer me-2"></i> Imprimir
+            </a>
+        </div>
+
+        <div class="bracket-container">
+            {% if times|length >= 8 %}
+                <div class="bracket-column">
+                    <div class="bracket-header">Quartas de Final</div>
+                    {% for i in range(0, 8, 2) %}
+                    <div class="match-card">
+                        <div class="team-row">
+                            <span class="team-name-mm">
+                                <i class="bi bi-shield-shaded"></i> 
+                                {{ times[i].nome }} 
+                                <span class="team-rank-badge">({{i+1}}º)</span>
+                            </span>
+                            <span class="team-score">-</span>
+                        </div>
+                        <div class="team-row">
+                            <span class="team-name-mm">
+                                <i class="bi bi-shield-shaded"></i> 
+                                {{ times[7-i].nome }} 
+                                <span class="team-rank-badge">({{8-i}}º)</span>
+                            </span>
+                            <span class="team-score">-</span>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                
+                <div class="bracket-column">
+                    <div class="bracket-header">Semifinais</div>
+                    {% for i in range(2) %}
+                    <div class="match-card" style="margin-top: 60px; margin-bottom: 60px;">
+                        <div class="team-row">
+                            <span class="team-name-mm placeholder-text">Vencedor Q{{i*2+1}}</span>
+                            <span class="team-score">-</span>
+                        </div>
+                        <div class="team-row">
+                            <span class="team-name-mm placeholder-text">Vencedor Q{{i*2+2}}</span>
+                            <span class="team-score">-</span>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+
+                <div class="bracket-column final-match">
+                    <div class="bracket-header"><i class="bi bi-trophy-fill me-2"></i> Grande Final</div>
+                    <div class="match-card">
+                        <div class="team-row">
+                            <span class="team-name-mm">Finalista 1</span>
+                            <span class="team-score">-</span>
+                        </div>
+                        <div class="team-row">
+                            <span class="team-name-mm">Finalista 2</span>
+                            <span class="team-score">-</span>
+                        </div>
+                    </div>
+                </div>
+            {% else %}
+                <div class="text-center p-5 align-self-center" style="color: var(--text-grey);">
+                    <i class="bi bi-diagram-2 display-3 mb-3 d-block" style="opacity: 0.3;"></i>
+                    <h5 class="fw-bold text-light">Mata-Mata não definido</h5>
+                    <p class="small mb-0">O chaveamento será gerado automaticamente quando houver pelo menos 8 times na tabela.</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Boletim Oficial - FuteDesk</title>
+    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@600;700&family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+
+    <style>
+        /* --- CONFIGURAÇÕES DE PÁGINA --- */
+        :root {
+            --primary-color: #0f172a;
+            --accent-color: #2563eb;
+            --text-dark: #1e293b;
+            --text-light: #64748b;
+            --border-color: #e2e8f0;
+            --table-stripe: #f8fafc;
+        }
+
+        * { box-sizing: border-box; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #555;
+            margin: 0;
+            padding: 0;
+        }
+
+        /* Folha A4 */
+        .page {
+            background: white;
+            width: 210mm;
+            min-height: 297mm;
+            margin: 20px auto;
+            padding: 15mm;
+            box-shadow: 0 0 20px rgba(0,0,0,0.5);
+            position: relative;
+        }
+
+        /* --- BARRA DE CONTROLE (NÃO IMPRIME) --- */
+        .no-print {
+            background: #1e293b;
+            padding: 15px;
+            text-align: center;
+            position: fixed;
+            top: 0; left: 0; width: 100%;
+            z-index: 999;
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+        }
+        .btn-print, .btn-close {
+            padding: 10px 25px;
+            border-radius: 8px;
+            font-weight: bold;
+            text-transform: uppercase;
+            cursor: pointer;
+            border: none;
+            text-decoration: none;
+            font-family: 'Inter', sans-serif;
+        }
+        .btn-print { background: #2563eb; color: white; }
+        .btn-print:hover { background: #1d4ed8; }
+        .btn-close { background: #475569; color: white; }
+        .btn-close:hover { background: #334155; }
+
+        /* --- CABEÇALHO --- */
+        .header {
+            border-bottom: 4px solid var(--primary-color);
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+        }
+        .header-left h1 {
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 42px;
+            margin: 0;
+            text-transform: uppercase;
+            color: var(--primary-color);
+            line-height: 0.9;
+        }
+
+        .categoria-wrapper {
+            margin-top: 8px;
+            font-size: 14px;
+            color: var(--text-light);
+            font-weight: 600;
+            text-transform: uppercase;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .categoria-badge {
+            color: var(--accent-color);
+            font-weight: 900;
+            font-size: 18px;
+            letter-spacing: 1px;
+        }
+
+        .header-right { text-align: right; }
+        .data-emissao { display: block; font-size: 10px; color: var(--text-light); margin-top: 5px; }
+
+        /* --- SEÇÕES --- */
+        .section-title {
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 20px;
+            font-weight: 700;
+            text-transform: uppercase;
+            color: var(--primary-color);
+            border-left: 5px solid var(--accent-color);
+            padding-left: 10px;
+            margin: 30px 0 15px 0;
+        }
+
+        /* --- TABELA PRINCIPAL --- */
+        .table-main {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 12px;
+            margin-bottom: 20px;
+        }
+        .table-main thead th {
+            background-color: var(--primary-color);
+            color: white;
+            text-transform: uppercase;
+            padding: 10px 5px;
+            text-align: center;
+            font-weight: 700;
+        }
+        .table-main tbody td {
+            padding: 8px 5px;
+            border-bottom: 1px solid var(--border-color);
+            text-align: center;
+            color: var(--text-dark);
+        }
+        .table-main tbody tr:nth-child(even) {
+            background-color: var(--table-stripe);
+        }
+
+        .col-pos { width: 40px; font-weight: 800; color: var(--text-light); }
+        .col-time { text-align: left !important; font-weight: 700; font-size: 13px; text-transform: uppercase; }
+
+        .col-pts {
+            background-color: #eff6ff;
+            color: var(--accent-color) !important;
+            font-weight: 900 !important;
+            font-size: 14px;
+            border-left: 1px solid #dbeafe;
+            border-right: 1px solid #dbeafe;
+        }
+
+        .zone-g4 { border-left: 4px solid #2563eb; }
+        .zone-z4 { border-left: 4px solid #ef4444; }
+
+        /* --- GRID ARTILHARIA / GOLEIROS --- */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-top: 10px;
+        }
+
+        .mini-table { width: 100%; border-collapse: collapse; font-size: 11px; }
+        .mini-table th {
+            border-bottom: 2px solid var(--text-dark);
+            text-align: left; padding: 5px;
+            text-transform: uppercase;
+            color: var(--text-dark);
+        }
+        .mini-table td { padding: 6px 5px; border-bottom: 1px solid var(--border-color); }
+        .mini-table .rank { font-weight: bold; color: var(--accent-color); width: 20px; }
+        .mini-table .value { font-weight: 900; text-align: right; color: var(--primary-color); }
+
+        /* --- TABELA DE JOGOS --- */
+        .table-jogos {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+            margin-bottom: 20px;
+        }
+        .table-jogos thead th {
+            background-color: var(--primary-color);
+            color: white;
+            text-transform: uppercase;
+            padding: 10px 5px;
+            text-align: center;
+            font-weight: 700;
+        }
+        .table-jogos tbody td {
+            padding: 12px 10px;
+            border-bottom: 1px solid var(--border-color);
+            color: var(--text-dark);
+        }
+
+        .confronto-times {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+        }
+        .vs {
+            font-weight: 600;
+            color: var(--text-light);
+            padding: 2px 8px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+        }
+
+        /* --- RODAPÉ --- */
+        .footer {
+            position: absolute;
+            bottom: 15mm;
+            left: 15mm; right: 15mm;
+            border-top: 1px solid var(--border-color);
+            padding-top: 10px;
+            font-size: 10px;
+            color: var(--text-light);
+            text-transform: uppercase;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        /* --- IMPRESSÃO --- */
+        @media print {
+            body { background: white; }
+            .page { box-shadow: none; margin: 0; width: 100%; min-height: auto; }
+            .no-print { display: none; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="no-print">
+    <button onclick="window.print()" class="btn-print">🖨️ Imprimir Boletim</button>
+    <button onclick="window.close()" class="btn-close">Fechar</button>
+</div>
+
+<div class="page">
+
+    <div class="header">
+        <div class="header-left">
+            <h1>Boletim de Jogos</h1>
+            <div class="categoria-wrapper">
+                <span>Categoria:</span>
+                <span class="categoria-badge">{{ session.get('current_category_name', 'GERAL') }}</span>
+            </div>
+        </div>
+        <div class="header-right">
+            <span class="data-emissao">Emitido em: {{ data_geracao }}</span>
+        </div>
+    </div>
+
+    <div class="section-title">Programação de Jogos</div>
+
+    <table class="table-jogos">
+        <thead>
+            <tr>
+                <th style="text-align:left;">Data/Hora</th>
+                <th style="text-align:left;">Descrição</th>
+                <th>Confronto</th>
+                <th>Local</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for confronto in confrontos %}
+            <tr>
+                <td style="text-align:left;">
+                    <strong>{{ confronto.data_confronto | formatar_data_br }}</strong><br>
+                    <span style="font-size:12px; color:var(--text-light);">{{ confronto.horario }}</span>
+                </td>
+                <td style="text-align:left;">{{ confronto.jogo_num }}</td>
+                <td>
+                    <div class="confronto-times">
+                        <span>{{ confronto.time_a }}</span>
+                        <span class="vs">VS</span>
+                        <span>{{ confronto.time_b }}</span>
+                    </div>
+                </td>
+                <td>{{ confronto.local }}</td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="4" style="text-align:center; padding:20px; color:var(--text-light);">Nenhum jogo cadastrado.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <div class="section-title">Tabela de Classificação</div>
+
+    <table class="table-main">
+        <thead>
+            <tr>
+                <th>#</th>
+                <th style="text-align:left;">Clube</th>
+                <th>PTS</th>
+                <th>J</th>
+                <th>V</th>
+                <th>E</th>
+                <th>D</th>
+                <th>GP</th>
+                <th>GC</th>
+                <th>SG</th>
+                <th>%</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for time in times %}
+            {% set row_class = '' %}
+            {% if loop.index <= 4 %}
+                {% set row_class = 'zone-g4' %}
+            {% elif loop.index >= times|length - 3 and times|length > 6 %}
+                {% set row_class = 'zone-z4' %}
+            {% endif %}
+
+            <tr class="{{ row_class }}">
+                <td class="col-pos">{{ loop.index }}º</td>
+                <td class="col-time">{{ time.nome }}</td>
+                <td class="col-pts">{{ time.P }}</td>
+                <td>{{ time.J }}</td>
+                <td>{{ time.V }}</td>
+                <td>{{ time.E }}</td>
+                <td>{{ time.D }}</td>
+                <td>{{ time.GM }}</td>
+                <td>{{ time.GS }}</td>
+                <td style="font-weight:bold;">{{ time.SG }}</td>
+                <td>{{ ((time.P / (time.J * 3)) * 100) | round(0) if time.J > 0 else 0 }}%</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <div class="stats-grid">
+
+        <!-- Artilheiros -->
+        <div>
+            <div class="section-title">Artilharia</div>
+            <table class="mini-table">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Jogador</th>
+                        <th>Gols</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for artilheiro in artilharia %}
+                    <tr>
+                        <td class="rank">{{ loop.index }}</td>
+                        <td>{{ artilheiro.nome }}</td>
+                        <td class="value">{{ artilheiro.gols }}</td>
+                    </tr>
+                    {% else %}
+                    <tr><td colspan="3" style="text-align:center; color:var(--text-light);">Nenhum dado.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Goleiros -->
+        <div>
+            <div class="section-title">Goleiros - Menos Vazados</div>
+            <table class="mini-table">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Goleiro</th>
+                        <th>GC</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for g in goleiros %}
+                    <tr>
+                        <td class="rank">{{ loop.index }}</td>
+                        <td>{{ g.nome }}</td>
+                        <td class="value">{{ g.gc }}</td>
+                    </tr>
+                    {% else %}
+                    <tr><td colspan="3" style="text-align:center; color:var(--text-light);">Nenhum dado.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+    </div>
+
+    <div class="footer">
+        <span>Boletim FuteDesk</span>
+        <span>Página 1</span>
+    </div>
+
+</div>
+
+</body>
+</html>

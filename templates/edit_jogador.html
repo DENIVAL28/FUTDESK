@@ -1,0 +1,65 @@
+{% extends 'base.html' %}
+
+{% block title %}Editar Jogador - FuteDesk{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-5">
+            <div class="card shadow-sm border-0" style="border-radius: 16px; overflow: hidden;">
+                <div class="card-header py-3" style="background: {{ '#f59e0b' if tipo == 'artilheiro' else '#10b981' }}; color: white;">
+                    <h4 class="mb-0 fw-bold" style="font-family: 'Rajdhani', sans-serif; text-transform: uppercase; display: flex; align-items: center;">
+                        <i class="bi {{ 'bi-dribbble' if tipo == 'artilheiro' else 'bi-shield-fill' }} me-2"></i>
+                        Editar {{ 'Artilheiro' if tipo == 'artilheiro' else 'Goleiro' }}
+                    </h4>
+                </div>
+                <div class="card-body p-4">
+                    
+                    <form method="POST">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+
+                        <div class="mb-4">
+                            <label class="form-label fw-bold text-muted small text-uppercase">Nome do Jogador</label>
+                            <input type="text" class="form-control form-control-lg bg-light" name="nome" value="{{ jogador.nome }}" required style="border: none; font-weight: 700; color: #334155;">
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="form-label fw-bold text-muted small text-uppercase">Time</label>
+                            <select name="time_id" class="form-select bg-light" style="border: none; font-weight: 600; padding: 12px;">
+                                {% for t in times %}
+                                <option value="{{ t.id }}" {{ 'selected' if t.id == jogador.time_id else '' }}>{{ t.nome }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="mb-4 p-3 rounded" style="background: {{ '#fffbeb' if tipo == 'artilheiro' else '#ecfdf5' }}; border: 1px solid {{ '#fcd34d' if tipo == 'artilheiro' else '#6ee7b7' }};">
+                            <label for="quantidade" class="form-label fw-bold" style="color: {{ '#b45309' if tipo == 'artilheiro' else '#047857' }}; text-transform: uppercase;">
+                                {{ 'Gols Marcados' if tipo == 'artilheiro' else 'Gols Sofridos' }} (Total)
+                            </label>
+                            <div class="input-group">
+                                <button class="btn" style="background: {{ '#f59e0b' if tipo == 'artilheiro' else '#10b981' }}; color: white;" type="button" onclick="this.parentNode.querySelector('input[type=number]').stepDown()">
+                                    <i class="bi bi-dash-lg"></i>
+                                </button>
+                                <input type="number" class="form-control text-center fw-bold fs-4" id="quantidade" name="quantidade" value="{{ jogador.gols if tipo == 'artilheiro' else jogador.gols_sofridos }}" min="0" required style="color: {{ '#b45309' if tipo == 'artilheiro' else '#047857' }}; border-color: {{ '#fcd34d' if tipo == 'artilheiro' else '#6ee7b7' }};">
+                                <button class="btn" style="background: {{ '#f59e0b' if tipo == 'artilheiro' else '#10b981' }}; color: white;" type="button" onclick="this.parentNode.querySelector('input[type=number]').stepUp()">
+                                    <i class="bi bi-plus-lg"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn py-3 fw-bold" style="border-radius: 10px; font-size: 1.1rem; letter-spacing: 1px; background: {{ '#f59e0b' if tipo == 'artilheiro' else '#10b981' }}; color: white; border: none; box-shadow: 0 4px 10px rgba(0,0,0,0.1);">
+                                <i class="bi bi-check2-circle me-2"></i> SALVAR DADOS
+                            </button>
+                            <a href="{{ url_for('artilharia_page' if tipo == 'artilheiro' else 'goleiros_page') }}" class="btn btn-light py-3 fw-bold text-muted" style="border-radius: 10px;">
+                                Cancelar
+                            </a>
+                        </div>
+                    </form>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

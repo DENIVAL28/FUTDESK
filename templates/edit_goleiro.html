@@ -1,0 +1,170 @@
+{% extends 'base.html' %}
+
+{% block title %}Editar Goleiro - FuteDesk{% endblock %}
+
+{% block content %}
+<style>
+    /* --- VARIÁVEIS GERAIS (FUTEDESK DARK) --- */
+    :root {
+        --dark-bg: #0f172a;
+        --dark-solid: #090e1a;
+        --glass-border: rgba(255, 255, 255, 0.1);
+        --text-light: #f1f5f9;
+        --text-grey: #94a3b8;
+        --neon-blue: #00f2ff;
+        --primary-blue: #3b82f6;
+        --danger-red: #ef4444;
+        --gol-primary: #10b981; /* Verde Menta para Goleiros */
+    }
+
+    /* Força fundo escuro */
+    .main-wrapper { background-color: var(--dark-bg) !important; }
+
+    /* Card Centralizado */
+    .card-edit {
+        background: var(--dark-solid);
+        border: 1px solid var(--glass-border);
+        border-radius: 16px;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6);
+        color: var(--text-light);
+        overflow: hidden;
+        max-width: 600px;
+        margin: 40px auto;
+    }
+
+    .card-header-edit {
+        background: rgba(255, 255, 255, 0.03);
+        padding: 25px;
+        border-bottom: 1px solid var(--glass-border);
+        text-align: center;
+    }
+
+    .edit-title {
+        font-family: 'Rajdhani', sans-serif;
+        font-weight: 700;
+        font-size: 1.5rem;
+        margin: 0;
+        color: var(--text-light);
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+
+    /* Inputs e Labels */
+    .form-label {
+        color: var(--text-grey);
+        font-size: 0.85rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        margin-bottom: 8px;
+        display: block;
+    }
+
+    .form-control, .form-select {
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid var(--glass-border);
+        color: var(--text-light);
+        border-radius: 8px;
+        padding: 12px;
+        font-weight: 500;
+    }
+    
+    .form-control:focus, .form-select:focus {
+        background: rgba(255, 255, 255, 0.1);
+        border-color: var(--gol-primary);
+        box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.1);
+        color: white;
+    }
+
+    /* Estilo para Select Options (Fundo escuro) */
+    option {
+        background-color: var(--dark-bg);
+        color: white;
+    }
+
+    /* Botões */
+    .btn-save {
+        background: var(--gol-primary);
+        color: white;
+        border: none;
+        padding: 12px 25px;
+        font-weight: 700;
+        border-radius: 10px;
+        transition: 0.3s;
+    }
+    .btn-save:hover {
+        background: #059669;
+        box-shadow: 0 0 15px rgba(16, 185, 129, 0.4);
+    }
+
+    .btn-cancel {
+        background: transparent;
+        border: 1px solid var(--glass-border);
+        color: var(--text-grey);
+        padding: 12px 25px;
+        font-weight: 600;
+        border-radius: 10px;
+        text-decoration: none;
+        transition: 0.3s;
+    }
+    .btn-cancel:hover {
+        border-color: var(--text-light);
+        color: var(--text-light);
+        background: rgba(255, 255, 255, 0.05);
+    }
+</style>
+
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            
+            <div class="card-edit">
+                <div class="card-header-edit">
+                    <h1 class="edit-title">
+                        <i class="bi bi-shield-fill-check me-2" style="color: var(--gol-primary);"></i> 
+                        Editar Goleiro
+                    </h1>
+                </div>
+                
+                <div class="card-body p-4">
+                    <form action="{{ url_for('edit_goleiro', id=goleiro.id) }}" method="POST">
+                        
+                        <div class="mb-4">
+                            <label class="form-label">Nome do Goleiro</label>
+                            <input type="text" name="jogador" class="form-control" value="{{ goleiro.jogador }}" required>
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="form-label">Time</label>
+                            <select name="time_nome" class="form-select">
+                                {% for t in times %}
+                                <option value="{{ t }}" {% if t == goleiro.time_nome %}selected{% endif %}>{{ t }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-6">
+                                <label class="form-label">Nº Camisa</label>
+                                <input type="number" name="camisa" class="form-control" value="{{ goleiro.camisa }}">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label" style="color: var(--danger-red);">Gols Sofridos</label>
+                                <input type="number" name="gols_sofridos" class="form-control" value="{{ goleiro.gols_sofridos }}" required style="font-weight: 800;">
+                            </div>
+                        </div>
+
+                        <div class="d-flex justify-content-between mt-4 pt-2">
+                            <a href="{{ url_for('goleiros_page') }}" class="btn-cancel">Cancelar</a>
+                            <button type="submit" class="btn-save">
+                                <i class="bi bi-check2-circle me-2"></i> Salvar Alterações
+                            </button>
+                        </div>
+
+                    </form>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+{% endblock %}
